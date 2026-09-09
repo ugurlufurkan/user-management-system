@@ -16,6 +16,10 @@ export class AccountService {
 
     return newAccount;
   }
+
+  async findAll() {
+    return db.select().from(account);
+  }
 }
 
 export const accountService = new AccountService();

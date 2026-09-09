@@ -33,3 +33,20 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const accounts = await accountService.findAll();
+
+    return NextResponse.json(accounts, { status: 200 });
+  } catch (error) {
+    console.error("Account listing failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to fetch accounts",
+      },
+      { status: 500 }
+    );
+  }
+}
