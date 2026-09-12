@@ -33,6 +33,16 @@ export class UserService {
     return userRecord ?? null;
   }
 
+  async findByAccountId(accountId: string) {
+    const [userRecord] = await db
+      .select()
+      .from(user)
+      .where(sql`${user.accountId} = ${accountId}::uuid`)
+      .limit(1);
+
+    return userRecord ?? null;
+  }
+
   async update(
     id: string,
     data: {
