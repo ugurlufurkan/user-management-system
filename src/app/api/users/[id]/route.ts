@@ -87,3 +87,35 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const deletedUser = await userService.delete(id);
+
+    if (!deletedUser) {
+      return NextResponse.json(
+        {
+          error: "User not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("User deletion failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to delete user",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
