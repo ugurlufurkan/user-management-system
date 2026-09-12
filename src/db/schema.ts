@@ -33,7 +33,7 @@ export const user = pgTable("user", {
     .defaultNow()
     .notNull(),
 });
-export const userFamilyInformation = pgTable("user_family_information", {user_family_information" , {
+export const userFamilyInformation = pgTable("user_family_information", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
