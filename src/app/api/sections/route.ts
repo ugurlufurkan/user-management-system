@@ -33,3 +33,21 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const sections = await sectionService.findAll();
+
+    return NextResponse.json(sections, { status: 200 });
+  } catch (error) {
+    console.error("Section listing failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to fetch sections",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
