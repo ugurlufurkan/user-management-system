@@ -30,6 +30,22 @@ export class AccountService {
 
     return accountRecord ?? null;
   }
+
+  async update(
+    id: string,
+    data: {
+      email?: string;
+      passwordHash?: string;
+    }
+  ) {
+    const [updatedAccount] = await db
+      .update(account)
+      .set(data)
+      .where(sql`${account.id} = ${id}::uuid`)
+      .returning();
+
+    return updatedAccount ?? null;
+  }
 }
 
 export const accountService = new AccountService();

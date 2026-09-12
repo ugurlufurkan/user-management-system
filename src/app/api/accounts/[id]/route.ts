@@ -32,3 +32,50 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    const { email, passwordHash } = body;
+
+    if (!email && !passwordHash) {
+      return NextResponse.json(
+        {
+          error: "At least one field is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedAccount = await accountService.update(id, {
+      ...(email !== undefined && { email }),
+      ...(passwordHash !== undefined && { passwordHash }),
+    });
+
+    if (!updatedAccount) {
+      return NextResponse.json(
+        {
+          error: "Account not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(updatedAccount, { status: 200 });
+  } catch (error) {
+    console.error("Account update failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to update account",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
