@@ -35,3 +35,21 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const users = await userService.findAll();
+
+    return NextResponse.json(users, { status: 200 });
+  } catch (error) {
+    console.error("User listing failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to fetch users",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
