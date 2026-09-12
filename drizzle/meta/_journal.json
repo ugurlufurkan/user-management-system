@@ -8,6 +8,13 @@
       "when": 1788954023686,
       "tag": "0000_amusing_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789210816500,
+      "tag": "0001_big_tarantula",
+      "breakpoints": true
     }
   ]
 }
