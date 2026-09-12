@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { account } from "@/db/schema";
 
@@ -45,6 +45,15 @@ export class AccountService {
       .returning();
 
     return updatedAccount ?? null;
+  }
+
+  async delete(id: string) {
+    const [deletedAccount] = await db
+      .delete(account)
+      .where(sql`${account.id} = ${id}::uuid`)
+      .returning();
+
+    return deletedAccount ?? null;
   }
 }
 

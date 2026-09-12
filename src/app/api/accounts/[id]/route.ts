@@ -79,3 +79,35 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const deletedAccount = await accountService.delete(id);
+
+    if (!deletedAccount) {
+      return NextResponse.json(
+        {
+          error: "Account not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("Account deletion failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to delete account",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
