@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { userService } from "@/services/user.service";
+import { errorResponse, successResponse } from "@/lib/api-response";
 
 function isValidUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -15,35 +16,23 @@ export async function GET(
     const { id } = await params;
 
     if (!isValidUuid(id)) {
-      return NextResponse.json(
-        {
-          error: "Invalid user id",
-        },
-        { status: 400 }
-      );
+      return errorResponse("Invalid user id", 400);
     }
 
     const user = await userService.findById(id);
 
     if (!user) {
-      return NextResponse.json(
-        {
-          error: "User not found",
-        },
-        { status: 404 }
-      );
+      return errorResponse("User not found", 404);
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return successResponse(user);
   } catch (error) {
     console.error("User lookup failed:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to fetch user",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "Failed to fetch user",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
@@ -56,12 +45,7 @@ export async function PATCH(
     const { id } = await params;
 
     if (!isValidUuid(id)) {
-      return NextResponse.json(
-        {
-          error: "Invalid user id",
-        },
-        { status: 400 }
-      );
+      return errorResponse("Invalid user id", 400);
     }
 
     const body = await request.json();
@@ -77,11 +61,9 @@ export async function PATCH(
     );
 
     if (!hasFirstName && !hasLastName) {
-      return NextResponse.json(
-        {
-          error: "At least one field is required",
-        },
-        { status: 400 }
+      return errorResponse(
+        "At least one field is required",
+        400
       );
     }
 
@@ -90,11 +72,9 @@ export async function PATCH(
       (typeof body.firstName !== "string" ||
         body.firstName.trim().length < 2)
     ) {
-      return NextResponse.json(
-        {
-          error: "firstName must be at least 2 characters",
-        },
-        { status: 400 }
+      return errorResponse(
+        "firstName must be at least 2 characters",
+        400
       );
     }
 
@@ -103,16 +83,19 @@ export async function PATCH(
       (typeof body.lastName !== "string" ||
         body.lastName.trim().length < 2)
     ) {
-      return NextResponse.json(
-        {
-          error: "lastName must be at least 2 characters",
-        },
-        { status: 400 }
+      return errorResponse(
+        "lastName must be at least 2 characters",
+        400
       );
     }
 
-    const firstName = hasFirstName ? body.firstName.trim() : undefined;
-    const lastName = hasLastName ? body.lastName.trim() : undefined;
+    const firstName = hasFirstName
+      ? body.firstName.trim()
+      : undefined;
+
+    const lastName = hasLastName
+      ? body.lastName.trim()
+      : undefined;
 
     const user = await userService.update(id, {
       firstName,
@@ -120,24 +103,17 @@ export async function PATCH(
     });
 
     if (!user) {
-      return NextResponse.json(
-        {
-          error: "User not found",
-        },
-        { status: 404 }
-      );
+      return errorResponse("User not found", 404);
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return successResponse(user);
   } catch (error) {
     console.error("User update failed:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to update user",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "Failed to update user",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
@@ -150,35 +126,23 @@ export async function DELETE(
     const { id } = await params;
 
     if (!isValidUuid(id)) {
-      return NextResponse.json(
-        {
-          error: "Invalid user id",
-        },
-        { status: 400 }
-      );
+      return errorResponse("Invalid user id", 400);
     }
 
     const deletedUser = await userService.delete(id);
 
     if (!deletedUser) {
-      return NextResponse.json(
-        {
-          error: "User not found",
-        },
-        { status: 404 }
-      );
+      return errorResponse("User not found", 404);
     }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("User deletion failed:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to delete user",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "Failed to delete user",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }

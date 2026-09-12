@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { userService } from "@/services/user.service";
+import { errorResponse, successResponse } from "@/lib/api-response";
 
 function isValidUuid(value: unknown): value is string {
   if (typeof value !== "string") {
@@ -25,29 +26,23 @@ export async function POST(request: Request) {
       typeof body.lastName === "string" ? body.lastName.trim() : "";
 
     if (!accountId || !firstName || !lastName) {
-      return NextResponse.json(
-        {
-          error: "accountId, firstName and lastName are required",
-        },
-        { status: 400 }
+      return errorResponse(
+        "accountId, firstName and lastName are required",
+        400
       );
     }
 
     if (!isValidUuid(accountId)) {
-      return NextResponse.json(
-        {
-          error: "accountId must be a valid UUID",
-        },
-        { status: 400 }
+      return errorResponse(
+        "accountId must be a valid UUID",
+        400
       );
     }
 
     if (firstName.length < 2 || lastName.length < 2) {
-      return NextResponse.json(
-        {
-          error: "firstName and lastName must be at least 2 characters",
-        },
-        { status: 400 }
+      return errorResponse(
+        "firstName and lastName must be at least 2 characters",
+        400
       );
     }
 
@@ -57,16 +52,14 @@ export async function POST(request: Request) {
       lastName,
     });
 
-    return NextResponse.json(newUser, { status: 201 });
+    return successResponse(newUser, 201);
   } catch (error) {
     console.error("User creation failed:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to create user",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "Failed to create user",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
@@ -75,16 +68,14 @@ export async function GET() {
   try {
     const users = await userService.findAll();
 
-    return NextResponse.json(users, { status: 200 });
+    return successResponse(users);
   } catch (error) {
     console.error("User listing failed:", error);
 
-    return NextResponse.json(
-      {
-        error: "Failed to fetch users",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return errorResponse(
+      "Failed to fetch users",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
