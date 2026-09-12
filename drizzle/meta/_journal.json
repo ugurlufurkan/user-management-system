@@ -15,6 +15,13 @@
       "when": 1789210816500,
       "tag": "0001_big_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789216125888,
+      "tag": "0002_solid_luminals",
+      "breakpoints": true
     }
   ]
 }
