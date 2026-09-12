@@ -33,3 +33,14 @@ export const user = pgTable("user", {
     .defaultNow()
     .notNull(),
 });
+export const userFamilyInformation = pgTable("user_family_information", {user_family_information" , {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  fatherName: varchar("father_name", { length: 100 }).notNull(),
+  motherName: varchar("mother_name", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
