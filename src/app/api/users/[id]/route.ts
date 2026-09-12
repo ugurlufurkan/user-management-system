@@ -41,17 +41,17 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const firstName =
-      typeof body.firstName === "string"
-        ? body.firstName.trim()
-        : undefined;
+    const hasFirstName = Object.prototype.hasOwnProperty.call(
+      body,
+      "firstName"
+    );
 
-    const lastName =
-      typeof body.lastName === "string"
-        ? body.lastName.trim()
-        : undefined;
+    const hasLastName = Object.prototype.hasOwnProperty.call(
+      body,
+      "lastName"
+    );
 
-    if (!firstName && !lastName) {
+    if (!hasFirstName && !hasLastName) {
       return NextResponse.json(
         {
           error: "At least one field is required",
@@ -59,6 +59,35 @@ export async function PATCH(
         { status: 400 }
       );
     }
+
+    if (
+      hasFirstName &&
+      (typeof body.firstName !== "string" ||
+        body.firstName.trim().length < 2)
+    ) {
+      return NextResponse.json(
+        {
+          error: "firstName must be at least 2 characters",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      hasLastName &&
+      (typeof body.lastName !== "string" ||
+        body.lastName.trim().length < 2)
+    ) {
+      return NextResponse.json(
+        {
+          error: "lastName must be at least 2 characters",
+        },
+        { status: 400 }
+      );
+    }
+
+    const firstName = hasFirstName ? body.firstName.trim() : undefined;
+    const lastName = hasLastName ? body.lastName.trim() : undefined;
 
     const user = await userService.update(id, {
       firstName,
