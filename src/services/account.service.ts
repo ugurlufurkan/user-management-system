@@ -1,3 +1,4 @@
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { account } from "@/db/schema";
 
@@ -19,6 +20,15 @@ export class AccountService {
 
   async findAll() {
     return db.select().from(account);
+  }
+
+  async findById(id: string) {
+    const [accountRecord] = await db
+      .select()
+      .from(account)
+      .where(sql`${account.id} = ${id}::uuid`);
+
+    return accountRecord ?? null;
   }
 }
 
