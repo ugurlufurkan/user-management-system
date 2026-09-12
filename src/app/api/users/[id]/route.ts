@@ -1,12 +1,27 @@
 import { NextResponse } from "next/server";
 import { userService } from "@/services/user.service";
 
+function isValidUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+
+    if (!isValidUuid(id)) {
+      return NextResponse.json(
+        {
+          error: "Invalid user id",
+        },
+        { status: 400 }
+      );
+    }
 
     const user = await userService.findById(id);
 
@@ -39,6 +54,16 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+
+    if (!isValidUuid(id)) {
+      return NextResponse.json(
+        {
+          error: "Invalid user id",
+        },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
 
     const hasFirstName = Object.prototype.hasOwnProperty.call(
@@ -123,6 +148,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    if (!isValidUuid(id)) {
+      return NextResponse.json(
+        {
+          error: "Invalid user id",
+        },
+        { status: 400 }
+      );
+    }
 
     const deletedUser = await userService.delete(id);
 
