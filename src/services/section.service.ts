@@ -43,6 +43,15 @@ export class SectionService {
 
     return updatedSection ?? null;
   }
+
+  async delete(id: string) {
+    const [deletedSection] = await db
+      .delete(section)
+      .where(sql`${section.id} = ${id}::uuid`)
+      .returning();
+
+    return deletedSection ?? null;
+  }
 }
 
 export const sectionService = new SectionService();

@@ -78,3 +78,35 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const deletedSection = await sectionService.delete(id);
+
+    if (!deletedSection) {
+      return NextResponse.json(
+        {
+          error: "Section not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("Section deletion failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to delete section",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
