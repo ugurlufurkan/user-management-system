@@ -32,3 +32,49 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    const { name } = body;
+
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return NextResponse.json(
+        {
+          error: "name is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedSection = await sectionService.update(id, {
+      name: name.trim(),
+    });
+
+    if (!updatedSection) {
+      return NextResponse.json(
+        {
+          error: "Section not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(updatedSection, { status: 200 });
+  } catch (error) {
+    console.error("Section update failed:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to update section",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}

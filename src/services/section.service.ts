@@ -28,6 +28,21 @@ export class SectionService {
 
     return sectionRecord ?? null;
   }
+
+  async update(
+    id: string,
+    data: {
+      name?: string;
+    }
+  ) {
+    const [updatedSection] = await db
+      .update(section)
+      .set(data)
+      .where(sql`${section.id} = ${id}::uuid`)
+      .returning();
+
+    return updatedSection ?? null;
+  }
 }
 
 export const sectionService = new SectionService();
