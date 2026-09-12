@@ -12,6 +12,10 @@ const pool = new Pool({
   connectionString,
 });
 
+pool.on("error", (error) => {
+  console.error("PostgreSQL pool error:", error);
+});
+
 export const db = drizzle({
   client: pool,
 });
