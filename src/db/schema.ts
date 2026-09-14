@@ -66,3 +66,16 @@ export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_i
     .defaultNow()
     .notNull(),
 });
+export const session = pgTable("session", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  accountId: uuid("account_id")
+    .notNull()
+    .references(() => account.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    userAgent: varchar("user_agent", { length: 255 }),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+
+})
