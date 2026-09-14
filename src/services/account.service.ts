@@ -31,7 +31,7 @@ export class AccountService {
     return accountRecord ?? null;
   }
 
-  // --- LOGIN İŞLEMİ İÇİN YENİ EKLENEN METOT ---
+  // --- LOGIN İŞLEMİ İÇİN
   async findByEmail(email: string) {
     const [accountRecord] = await db
       .select()
