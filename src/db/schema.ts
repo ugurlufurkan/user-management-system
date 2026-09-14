@@ -71,11 +71,11 @@ export const session = pgTable("session", {
   accountId: uuid("account_id")
     .notNull()
     .references(() => account.id, { onDelete: "cascade" }),
-    token: varchar("token", { length: 255 }).notNull().unique(),
-    userAgent: varchar("user_agent", { length: 255 }),
-    ipAddress: varchar("ip_address", { length: 45 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  userAgent: varchar("user_agent", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-
-})
+});
