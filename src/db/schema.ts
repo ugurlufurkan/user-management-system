@@ -55,3 +55,14 @@ export const userGirlfriendInformation = pgTable("user_girlfriend_information", 
     .defaultNow()
     .notNull(),
 });
+export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_information", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  girlfriendId: uuid("girlfriend_id")
+    .notNull()
+    .references(() => userGirlfriendInformation.id, { onDelete: "cascade" }),
+  fatherName: varchar("father_name", { length: 100 }).notNull(),
+  motherName: varchar("mother_name", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
