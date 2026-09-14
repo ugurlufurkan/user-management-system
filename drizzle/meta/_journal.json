@@ -36,6 +36,13 @@
       "when": 1789378669521,
       "tag": "0004_nosy_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789379568259,
+      "tag": "0005_silky_spectrum",
+      "breakpoints": true
     }
   ]
 }
