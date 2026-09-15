@@ -9,8 +9,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login"); // Çıkış yapınca giriş sayfasına yolla
-      router.refresh(); // Ekrandaki verileri sıfırla
+      router.push("/login"); 
+      router.refresh();
     } catch (error) {
       console.error("Çıkış yapılırken hata oluştu", error);
     }
@@ -26,6 +26,12 @@ export default function Navbar() {
         <Link href="/profile" className="hover:text-blue-400 transition-colors">
           Profilim
         </Link>
+        
+        {/* İŞTE YENİ EKLENEN LİNKİMİZ */}
+        <Link href="/sections" className="hover:text-blue-400 transition-colors">
+          Bölümler
+        </Link>
+        
         <Link href="/login" className="hover:text-blue-400 transition-colors">
           Giriş Yap
         </Link>
