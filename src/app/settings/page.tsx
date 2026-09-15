@@ -9,9 +9,11 @@ export default function SettingsPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  
+  // Şifre kaydedilirken butonu kilitlemek için yeni state
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    // Sayfa açıldığında kullanıcının kim olduğunu (me) çekiyoruz
     const fetchUser = async () => {
       try {
         const res = await fetch("/api/auth/me");
@@ -31,11 +33,38 @@ export default function SettingsPage() {
     fetchUser();
   }, [router]);
 
-  // Şifre değiştirme formunu yakalayan fonksiyon
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Şimdilik sadece uyarı veriyoruz, API'sini bir sonraki adımda yazacağız
-    showToast("Şifre değiştirme arka planı (API) henüz bağlanmadı!", "error");
+    setIsSaving(true); // Butonu "Güncelleniyor..." moduna sok
+    
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    // HTML'deki inputların "name" özelliklerinden veriyi çekiyoruz
+    const currentPassword = formData.get("currentPassword");
+    const newPassword = formData.get("newPassword");
+
+    try {
+      // Yazdığımız API'ye PUT isteği atıyoruz
+      const res = await fetch("/api/auth/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast("Şifreniz başarıyla güncellendi! 🔐", "success");
+        form.reset(); // İşlem bittikten sonra şifre kutularını temizle
+      } else {
+        showToast(data.error || "Şifre değiştirilemedi.", "error");
+      }
+    } catch (error) {
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
+    } finally {
+      setIsSaving(false); // Butonun kilidini kaldır
+    }
   };
 
   if (loading) {
@@ -66,15 +95,19 @@ export default function SettingsPage() {
           <h3 className="font-semibold text-slate-700 mt-2 mb-2">Şifre Değiştir</h3>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Mevcut Şifreniz</label>
-            <input type="password" required className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
+            <input type="password" name="currentPassword" required className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Yeni Şifreniz</label>
-            <input type="password" required minLength={6} className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
+            <input type="password" name="newPassword" required minLength={6} className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
           </div>
           <div className="mt-4">
-            <button type="submit" className="bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md">
-              Şifreyi Güncelle
+            <button 
+              type="submit" 
+              disabled={isSaving}
+              className="bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:bg-slate-600 disabled:cursor-wait"
+            >
+              {isSaving ? "Güncelleniyor..." : "Şifreyi Güncelle"}
             </button>
           </div>
         </form>
