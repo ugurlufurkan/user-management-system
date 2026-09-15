@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/context/toast-context";
 
 type GirlfriendFamilyInfo = {
   id: string;
@@ -9,10 +10,10 @@ type GirlfriendFamilyInfo = {
 };
 
 export default function GirlfriendFamilyInfoCard({ userId }: { userId: string }) {
+  const { showToast } = useToast(); // BİLDİRİM FONKSİYONU
   const [familyInfo, setFamilyInfo] = useState<GirlfriendFamilyInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
 
   const fetchFamily = async () => {
     try {
@@ -34,7 +35,6 @@ export default function GirlfriendFamilyInfoCard({ userId }: { userId: string })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     
     const formData = new FormData(e.currentTarget);
     const payload = {
@@ -53,12 +53,15 @@ export default function GirlfriendFamilyInfoCard({ userId }: { userId: string })
       if (res.ok) {
         setIsEditing(false);
         fetchFamily(); 
+        
+        showToast("Kız arkadaş aile bilgileri başarıyla kaydedildi!", "success");
       } else {
         const data = await res.json();
-        setError(data.error || "İşlem başarısız. (Önce kız arkadaş bilgisi eklediğinize emin olun)");
+        // HATA BİLDİRİMİ! ⚠️ (Örn: Kız arkadaş henüz eklenmemişse)
+        showToast(data.error || "İşlem başarısız (Önce kız arkadaş bilgisi ekleyin).", "error");
       }
     } catch (err) {
-      setError("Sunucuyla iletişim kurulamadı.");
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
     }
   };
 
@@ -66,7 +69,6 @@ export default function GirlfriendFamilyInfoCard({ userId }: { userId: string })
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100 relative overflow-hidden">
-      {/* Arka plan ikonu */}
       <div className="absolute -bottom-4 -right-2 p-4 opacity-5 text-7xl pointer-events-none">🏡</div>
       
       <div className="flex justify-between items-center mb-6 relative z-10">
@@ -82,8 +84,6 @@ export default function GirlfriendFamilyInfoCard({ userId }: { userId: string })
           </button>
         )}
       </div>
-
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm relative z-10">{error}</div>}
 
       {isEditing ? (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
