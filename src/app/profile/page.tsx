@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SessionList from "@/components/session-list";
+import FamilyInfoCard from "@/components/family-info";
 
+// Veri tipine profile.id'yi de ekliyoruz ki bileşene gönderebilelim
 type UserData = {
   account: { email: string; createdAt: string };
-  profile: { firstName: string; lastName: string } | null;
+  profile: { id: string; firstName: string; lastName: string } | null; 
 };
 
 export default function ProfilePage() {
@@ -41,9 +43,11 @@ export default function ProfilePage() {
   if (!userData) return null;
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      {/* Kullanıcı Karşılama Kartı */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
+    // "flex flex-col gap-8" vererek kartların arasında güzel boşluklar bıraktık
+    <div className="max-w-4xl mx-auto mt-10 mb-20 flex flex-col gap-8">
+      
+      {/* 1. Kullanıcı Karşılama Kartı */}
+      <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
         <h1 className="text-3xl font-bold text-slate-800 mb-2">
           Hoş geldin, {userData.profile ? `${userData.profile.firstName} ${userData.profile.lastName}` : "Kullanıcı"} 👋
         </h1>
@@ -55,8 +59,14 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* İşte o havalı Oturumlar (Cihazlar) Listemiz */}
+      {/* 2. Aile Bilgileri Bileşeni */}
+      {userData.profile && (
+        <FamilyInfoCard userId={userData.profile.id} />
+      )}
+
+      {/* 3. Oturumlar (Cihazlar) Bileşeni */}
       <SessionList />
+      
     </div>
   );
 }
