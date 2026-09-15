@@ -22,9 +22,13 @@ export default function Navbar() {
         <Link href="/">UserSystem</Link>
       </div>
       
-      <div className="flex gap-5 items-center font-medium text-sm">
+      <div className="flex gap-5 items-center font-medium text-sm flex-wrap">
         <Link href="/profile" className="hover:text-blue-400 transition-colors">
           Profilim
+        </Link>
+        
+        <Link href="/settings" className="hover:text-blue-400 transition-colors">
+          Ayarlar
         </Link>
         
         <Link href="/users" className="hover:text-blue-400 transition-colors">
