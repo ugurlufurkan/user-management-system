@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/context/toast-context";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const { showToast } = useToast(); 
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -21,7 +21,6 @@ export default function RegisterPage() {
     const password = formData.get("password");
 
     try {
-      // Yazdığımız Register API'sine verileri yolluyoruz
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,16 +30,19 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Kayıt işlemi başarısız oldu.");
+        // HATA BİLDİRİMİ! ⚠️
+        showToast(data.error || "Kayıt işlemi başarısız oldu.", "error");
         setLoading(false);
         return;
       }
 
-      // Kayıt başarılıysa otomatik giriş yapılmış demektir, adamı profiline yollayalım
+      // BAŞARI BİLDİRİMİ! 🚀
+      showToast("Kayıt başarılı! Hesabınıza yönlendiriliyorsunuz...", "success");
+      
       router.push("/profile");
-      router.refresh(); // Navbar'daki "Giriş Yap" butonunun değişmesi için sayfayı tazele
+      router.refresh(); 
     } catch (err) {
-      setError("Sunucuya bağlanırken bir hata oluştu.");
+      showToast("Sunucuya bağlanırken bir hata oluştu.", "error");
       setLoading(false);
     }
   };
@@ -48,13 +50,6 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto mt-12 bg-white p-8 border border-slate-200 rounded-xl shadow-sm">
       <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">Hesap Oluştur</h1>
-      
-      {/* Hata Mesajı Gösterimi */}
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm border border-red-200">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex gap-4">
