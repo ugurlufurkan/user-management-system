@@ -10,8 +10,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   
-  // Şifre kaydedilirken butonu kilitlemek için yeni state
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); // Silme butonunu kilitlemek için
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,17 +35,15 @@ export default function SettingsPage() {
 
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSaving(true); // Butonu "Güncelleniyor..." moduna sok
+    setIsSaving(true);
     
     const form = e.currentTarget;
     const formData = new FormData(form);
     
-    // HTML'deki inputların "name" özelliklerinden veriyi çekiyoruz
     const currentPassword = formData.get("currentPassword");
     const newPassword = formData.get("newPassword");
 
     try {
-      // Yazdığımız API'ye PUT isteği atıyoruz
       const res = await fetch("/api/auth/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -56,14 +54,47 @@ export default function SettingsPage() {
 
       if (res.ok) {
         showToast("Şifreniz başarıyla güncellendi! 🔐", "success");
-        form.reset(); // İşlem bittikten sonra şifre kutularını temizle
+        form.reset();
       } else {
         showToast(data.error || "Şifre değiştirilemedi.", "error");
       }
     } catch (error) {
       showToast("Sunucuyla iletişim kurulamadı.", "error");
     } finally {
-      setIsSaving(false); // Butonun kilidini kaldır
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    // Kazara tıklamaları önlemek için ÇİFT ONAY alıyoruz!
+    const onay1 = confirm("⚠️ DİKKAT: Hesabınızı silmek üzeresiniz. Bu işlem GERİ ALINAMAZ! Emin misiniz?");
+    if (!onay1) return;
+
+    const onay2 = confirm("Gerçekten tüm aile ve kız arkadaş verilerinizi kalıcı olarak silmek istiyor musunuz? Son Kararınız mı?");
+    if (!onay2) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Yazdığımız acımasız API'yi çağırıyoruz
+      const res = await fetch("/api/auth/account", {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast("Hesabınız ve tüm verileriniz kalıcı olarak silindi. Hoşça kalın... 🗑️", "success");
+        // Hesabı silinen adamı siteye yeni girmiş gibi Kayıt ekranına yolluyoruz
+        router.push("/register");
+        router.refresh();
+      } else {
+        showToast(data.error || "Hesap silinemedi.", "error");
+        setIsDeleting(false);
+      }
+    } catch (error) {
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
+      setIsDeleting(false);
     }
   };
 
@@ -76,7 +107,6 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Hesap Ayarları ⚙️</h1>
       <p className="text-slate-500 mb-10">Güvenlik ve hesap tercihlerinizi buradan yönetebilirsiniz.</p>
 
-      {/* GÜVENLİK BÖLÜMÜ */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
         <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Güvenlik</h2>
         
@@ -113,7 +143,6 @@ export default function SettingsPage() {
         </form>
       </div>
 
-      {/* TEHLİKELİ BÖLGE (HESAP SİLME) */}
       <div className="bg-red-50 p-8 rounded-xl border border-red-200 relative overflow-hidden">
         <div className="absolute -right-4 -bottom-4 text-red-100 text-9xl pointer-events-none">⚠️</div>
         <h2 className="text-xl font-bold text-red-700 mb-2 relative z-10">Tehlikeli Bölge</h2>
@@ -121,10 +150,11 @@ export default function SettingsPage() {
           Hesabınızı silmek geri alınamaz bir işlemdir. Kaydettiğiniz tüm aile ve özel bilgileriniz kalıcı olarak veritabanından silinir.
         </p>
         <button 
-          onClick={() => showToast("Hesap silme arka planı (API) henüz bağlanmadı!", "error")}
-          className="bg-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md relative z-10"
+          onClick={handleDeleteAccount}
+          disabled={isDeleting}
+          className="bg-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md relative z-10 disabled:bg-red-400 disabled:cursor-wait"
         >
-          Hesabımı Kalıcı Olarak Sil
+          {isDeleting ? "Hesap Siliniyor..." : "Hesabımı Kalıcı Olarak Sil"}
         </button>
       </div>
     </div>
