@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/context/toast-context";
 
 type GirlfriendInfo = {
   id: string;
@@ -11,10 +12,10 @@ type GirlfriendInfo = {
 };
 
 export default function GirlfriendInfoCard({ userId }: { userId: string }) {
+  const { showToast } = useToast(); // BİLDİRİM FONKSİYONU
   const [girlfriendInfo, setGirlfriendInfo] = useState<GirlfriendInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
 
   const fetchGirlfriend = async () => {
     try {
@@ -36,7 +37,6 @@ export default function GirlfriendInfoCard({ userId }: { userId: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     
     const formData = new FormData(e.currentTarget);
     const payload = {
@@ -57,16 +57,17 @@ export default function GirlfriendInfoCard({ userId }: { userId: string }) {
       if (res.ok) {
         setIsEditing(false);
         fetchGirlfriend(); 
+        showToast("Kız arkadaş bilgileri başarıyla kaydedildi!", "success");
       } else {
         const data = await res.json();
-        setError(data.error || "Kayıt işlemi başarısız oldu.");
+        // HATA BİLDİRİMİ! ⚠️
+        showToast(data.error || "Kayıt işlemi başarısız oldu.", "error");
       }
     } catch (err) {
-      setError("Sunucuyla iletişim kurulamadı.");
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
     }
   };
 
-  // HTML <input type="date"> etiketinin okuyabileceği formata (YYYY-MM-DD) çevirici
   const formatDateForInput = (isoString?: string) => {
     if (!isoString) return "";
     return new Date(isoString).toISOString().split('T')[0];
@@ -76,7 +77,6 @@ export default function GirlfriendInfoCard({ userId }: { userId: string }) {
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-pink-100 relative overflow-hidden">
-      {/* Hafif bir arka plan detayı */}
       <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl pointer-events-none">❤️</div>
       
       <div className="flex justify-between items-center mb-6 relative z-10">
@@ -92,8 +92,6 @@ export default function GirlfriendInfoCard({ userId }: { userId: string }) {
           </button>
         )}
       </div>
-
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm relative z-10">{error}</div>}
 
       {isEditing ? (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
