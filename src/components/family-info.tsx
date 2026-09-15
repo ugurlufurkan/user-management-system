@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/context/toast-context";
 
-// Veritabanındaki yapımıza (schema) uygun tip tanımı
 type FamilyInfo = {
   id: string;
   fatherName: string;
@@ -11,12 +11,11 @@ type FamilyInfo = {
 };
 
 export default function FamilyInfoCard({ userId }: { userId: string }) {
+  const { showToast } = useToast(); // BİLDİRİM FONKSİYONUNU ÇIKARTIYORUZ
   const [familyInfo, setFamilyInfo] = useState<FamilyInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
 
-  // API'den aile bilgisini çeken fonksiyon
   const fetchFamily = async () => {
     try {
       const res = await fetch(`/api/users/${userId}/family`);
@@ -35,10 +34,8 @@ export default function FamilyInfoCard({ userId }: { userId: string }) {
     if (userId) fetchFamily();
   }, [userId]);
 
-  // Form gönderildiğinde Kayıt/Güncelleme yapan fonksiyon
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     
     const formData = new FormData(e.currentTarget);
     const payload = {
@@ -48,7 +45,6 @@ export default function FamilyInfoCard({ userId }: { userId: string }) {
     };
 
     try {
-      // Eğer daha önce bilgi girildiyse GÜNCELLE (PATCH), girilmediyse YENİ OLUŞTUR (POST)
       const method = familyInfo ? "PATCH" : "POST";
       const res = await fetch(`/api/users/${userId}/family`, {
         method,
@@ -58,13 +54,15 @@ export default function FamilyInfoCard({ userId }: { userId: string }) {
 
       if (res.ok) {
         setIsEditing(false);
-        fetchFamily(); // Ekranda güncel veriyi göstermek için tekrar çek
+        fetchFamily(); 
+        showToast("Aile bilgileri başarıyla kaydedildi!", "success");
       } else {
         const data = await res.json();
-        setError(data.error || "Kayıt işlemi başarısız oldu.");
+        // HATA BİLDİRİMİ! ⚠️
+        showToast(data.error || "Kayıt işlemi başarısız oldu.", "error");
       }
     } catch (err) {
-      setError("Sunucuyla iletişim kurulamadı.");
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
     }
   };
 
@@ -85,8 +83,6 @@ export default function FamilyInfoCard({ userId }: { userId: string }) {
           </button>
         )}
       </div>
-
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm">{error}</div>}
 
       {isEditing ? (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
