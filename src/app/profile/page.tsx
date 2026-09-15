@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import SessionList from "@/components/session-list";
 
-// Gelecek verinin tipini tanımlıyoruz (TypeScript)
 type UserData = {
   account: { email: string; createdAt: string };
   profile: { firstName: string; lastName: string } | null;
@@ -15,12 +15,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Sayfa açılır açılmaz arka planda "Ben kimim?" (me) API'sini çağırıyoruz
     const fetchUser = async () => {
       try {
         const res = await fetch("/api/auth/me");
         if (!res.ok) {
-          // Token bitmişse veya izinsizse login'e postala (Middleware zaten yapıyor ama çift dikiş olsun)
           router.push("/login");
           return;
         }
@@ -57,10 +55,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Gelecek bölüm için yer tutucu */}
-      <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300 text-center">
-        <p className="text-slate-500">Çok yakında buraya "Açık Oturumlar (Cihazlar)" listesi eklenecek...</p>
-      </div>
+      {/* İşte o havalı Oturumlar (Cihazlar) Listemiz */}
+      <SessionList />
     </div>
   );
 }
