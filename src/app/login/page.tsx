@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/context/toast-context";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const { showToast } = useToast(); // BİLDİRİM FONKSİYONU
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -19,7 +19,6 @@ export default function LoginPage() {
     const password = formData.get("password");
 
     try {
-      // Yazdığımız Login API'sine verileri yolluyoruz
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -29,16 +28,18 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Giriş işlemi başarısız oldu.");
+        showToast(data.error || "Giriş işlemi başarısız oldu.", "error");
         setLoading(false);
         return;
       }
 
-      // Giriş başarılıysa adamı profiline yollayalım
+      
+      showToast("Başarıyla giriş yapıldı, yönlendiriliyorsunuz...", "success");
+      // Giriş başarılıysa profiline yollayalım
       router.push("/profile");
-      router.refresh(); // Navbar'ın güncellenmesi için
+      router.refresh(); 
     } catch (err) {
-      setError("Sunucuya bağlanırken bir hata oluştu.");
+      showToast("Sunucuya bağlanırken bir hata oluştu.", "error");
       setLoading(false);
     }
   };
@@ -46,12 +47,6 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto mt-12 bg-white p-8 border border-slate-200 rounded-xl shadow-sm">
       <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">Giriş Yap</h1>
-      
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4 text-sm border border-red-200">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
