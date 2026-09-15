@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import SessionList from "@/components/session-list";
 import FamilyInfoCard from "@/components/family-info";
 import GirlfriendInfoCard from "@/components/girlfriend-info";
+import GirlfriendFamilyInfoCard from "@/components/girlfriend-family-info";
 
 type UserData = {
   account: { email: string; createdAt: string };
@@ -58,13 +59,12 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 2. Profil Detayları (Kullanıcı profili varsa göster) */}
+      {/* 2. Profil Detayları (Kullanıcının kendine ait oluşturduğu tablolar) */}
       {userData.profile && (
         <>
           <FamilyInfoCard userId={userData.profile.id} />
-          
-          {/* Yeni Eklenen Kız Arkadaş Bilgileri */}
           <GirlfriendInfoCard userId={userData.profile.id} />
+          <GirlfriendFamilyInfoCard userId={userData.profile.id} />
         </>
       )}
 
