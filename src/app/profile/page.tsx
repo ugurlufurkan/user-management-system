@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SessionList from "@/components/session-list";
 import FamilyInfoCard from "@/components/family-info";
+import GirlfriendInfoCard from "@/components/girlfriend-info";
 
-// Veri tipine profile.id'yi de ekliyoruz ki bileşene gönderebilelim
 type UserData = {
   account: { email: string; createdAt: string };
   profile: { id: string; firstName: string; lastName: string } | null; 
@@ -43,7 +43,6 @@ export default function ProfilePage() {
   if (!userData) return null;
 
   return (
-    // "flex flex-col gap-8" vererek kartların arasında güzel boşluklar bıraktık
     <div className="max-w-4xl mx-auto mt-10 mb-20 flex flex-col gap-8">
       
       {/* 1. Kullanıcı Karşılama Kartı */}
@@ -59,9 +58,14 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 2. Aile Bilgileri Bileşeni */}
+      {/* 2. Profil Detayları (Kullanıcı profili varsa göster) */}
       {userData.profile && (
-        <FamilyInfoCard userId={userData.profile.id} />
+        <>
+          <FamilyInfoCard userId={userData.profile.id} />
+          
+          {/* Yeni Eklenen Kız Arkadaş Bilgileri */}
+          <GirlfriendInfoCard userId={userData.profile.id} />
+        </>
       )}
 
       {/* 3. Oturumlar (Cihazlar) Bileşeni */}
