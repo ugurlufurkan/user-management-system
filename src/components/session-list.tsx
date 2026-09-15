@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/toast-context";
 
-// Oturum verisi için tip tanımlaması
 type Session = {
   id: string;
   userAgent: string;
@@ -15,10 +15,10 @@ type Session = {
 
 export default function SessionList() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Oturumları API'den çeken fonksiyon
   const fetchSessions = async () => {
     try {
       const res = await fetch("/api/auth/sessions");
@@ -37,7 +37,6 @@ export default function SessionList() {
     fetchSessions();
   }, []);
 
-  // Belirli bir cihazdan çıkış yapma (Revoke) işlemi
   const handleRevoke = async (id: string, isCurrent: boolean) => {
     if (!confirm("Bu cihazdaki oturumu kapatmak istediğinize emin misiniz?")) return;
 
@@ -47,19 +46,20 @@ export default function SessionList() {
       });
 
       if (res.ok) {
+        showToast("Oturum başarıyla kapatıldı!", "success");
+
         if (isCurrent) {
-          // Eğer adam kendi elindeki cihazdan çıkış yaptıysa login'e at
           router.push("/login");
           router.refresh();
         } else {
-          // Başka bir cihazdaki hesabı kapattıysa, sadece listeyi güncelle
           fetchSessions();
         }
       } else {
-        alert("Oturum kapatılamadı.");
+        // HATA DURUMUNDA DA KIRMIZI BİLDİRİM FIRLATIYORUZ ⚠️
+        showToast("Oturum kapatılırken bir sorun oluştu.", "error");
       }
     } catch (error) {
-      console.error("Oturum kapatma hatası:", error);
+      showToast("Sunucuya ulaşılamadı.", "error");
     }
   };
 
@@ -76,7 +76,6 @@ export default function SessionList() {
           {sessions.map((session) => (
             <div 
               key={session.id} 
-              // Eğer şu an elindeki cihazsa rengini Mavi (Aktif) yapıyoruz
               className={`p-5 border rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all ${
                 session.isCurrentDevice 
                   ? 'border-blue-300 bg-blue-50/50' 
@@ -85,7 +84,7 @@ export default function SessionList() {
             >
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="font-semibold text-slate-800 truncate max-wxs sm:max-w-md" title={session.userAgent}>
+                  <span className="font-semibold text-slate-800 truncate max-w-xs sm:max-w-md" title={session.userAgent}>
                     {session.userAgent.length > 40 ? session.userAgent.substring(0, 40) + "..." : session.userAgent}
                   </span>
                   {session.isCurrentDevice && (
