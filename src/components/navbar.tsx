@@ -27,7 +27,10 @@ export default function Navbar() {
           Profilim
         </Link>
         
-        {/* İŞTE YENİ EKLENEN LİNKİMİZ */}
+        <Link href="/users" className="hover:text-blue-400 transition-colors">
+          Üyeler
+        </Link>
+        
         <Link href="/sections" className="hover:text-blue-400 transition-colors">
           Bölümler
         </Link>
