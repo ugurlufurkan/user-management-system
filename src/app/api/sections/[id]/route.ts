@@ -1,112 +1,74 @@
-import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { sectionService } from "@/services/section.service";
+import { errorResponse, successResponse } from "@/lib/api-response";
 
-export async function GET(
-  _request: Request,
+// Gelen ID'nin geçerli bir veritabanı ID'si (UUID) olup olmadığını kontrol eden fonksiyon
+function isValidUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+// BÖLÜM (DEPARTMAN) SİLME İŞLEMİ
+export async function DELETE(
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-
-    const section = await sectionService.findById(id);
-
-    if (!section) {
-      return NextResponse.json(
-        {
-          error: "Section not found",
-        },
-        { status: 404 }
-      );
+    const cookieStore = await cookies();
+    if (!cookieStore.get("session_token")) {
+      return errorResponse("Bu işlemi yapmak için giriş yapmalısınız.", 401);
     }
 
-    return NextResponse.json(section, { status: 200 });
-  } catch (error) {
-    console.error("Section lookup failed:", error);
+    const { id } = await params; // Hangi bölüm silinecek?
+    
+    if (!isValidUuid(id)) {
+      return errorResponse("Geçersiz bölüm ID'si.", 400);
+    }
 
-    return NextResponse.json(
-      {
-        error: "Failed to fetch section",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    const deletedSection = await sectionService.delete(id);
+    
+    if (!deletedSection) {
+      return errorResponse("Silinmek istenen bölüm bulunamadı.", 404);
+    }
+
+    return successResponse({ message: "Bölüm başarıyla silindi." }, 200);
+  } catch (error) {
+    console.error("Bölüm silme hatası:", error);
+    return errorResponse("Bölüm silinirken sunucu hatası oluştu.", 500);
   }
 }
 
+// BÖLÜM İSMİNİ GÜNCELLEME İŞLEMİ
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const cookieStore = await cookies();
+    if (!cookieStore.get("session_token")) {
+      return errorResponse("Bu işlemi yapmak için giriş yapmalısınız.", 401);
+    }
+
     const { id } = await params;
+    
+    if (!isValidUuid(id)) {
+      return errorResponse("Geçersiz bölüm ID'si.", 400);
+    }
+
     const body = await request.json();
-
-    const { name } = body;
-
-    if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json(
-        {
-          error: "name is required",
-        },
-        { status: 400 }
-      );
+    
+    if (!body.name || typeof body.name !== "string" || body.name.trim().length < 2) {
+      return errorResponse("Geçerli bir bölüm adı giriniz (En az 2 karakter olmalıdır).", 400);
     }
 
-    const updatedSection = await sectionService.update(id, {
-      name: name.trim(),
-    });
-
+    const updatedSection = await sectionService.update(id, { name: body.name.trim() });
+    
     if (!updatedSection) {
-      return NextResponse.json(
-        {
-          error: "Section not found",
-        },
-        { status: 404 }
-      );
+      return errorResponse("Güncellenmek istenen bölüm bulunamadı.", 404);
     }
 
-    return NextResponse.json(updatedSection, { status: 200 });
+    return successResponse(updatedSection, 200);
   } catch (error) {
-    console.error("Section update failed:", error);
-
-    return NextResponse.json(
-      {
-        error: "Failed to update section",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-
-    const deletedSection = await sectionService.delete(id);
-
-    if (!deletedSection) {
-      return NextResponse.json(
-        {
-          error: "Section not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("Section deletion failed:", error);
-
-    return NextResponse.json(
-      {
-        error: "Failed to delete section",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    console.error("Bölüm güncelleme hatası:", error);
+    return errorResponse("Bölüm güncellenirken sunucu hatası oluştu.", 500);
   }
 }
