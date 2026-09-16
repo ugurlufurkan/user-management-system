@@ -11,7 +11,11 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); // Silme butonunu kilitlemek için
+  const [isDeleting, setIsDeleting] = useState(false); 
+
+  // İki şifre kutusu için ayrı ayrı göster/gizle state'leri
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,6 +59,9 @@ export default function SettingsPage() {
       if (res.ok) {
         showToast("Şifreniz başarıyla güncellendi! 🔐", "success");
         form.reset();
+        // İşlem bitince güvenlik için açık olan şifreleri tekrar gizliyoruz
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
       } else {
         showToast(data.error || "Şifre değiştirilemedi.", "error");
       }
@@ -66,7 +73,6 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    // Kazara tıklamaları önlemek için ÇİFT ONAY alıyoruz!
     const onay1 = confirm("⚠️ DİKKAT: Hesabınızı silmek üzeresiniz. Bu işlem GERİ ALINAMAZ! Emin misiniz?");
     if (!onay1) return;
 
@@ -76,7 +82,6 @@ export default function SettingsPage() {
     setIsDeleting(true);
 
     try {
-      // Yazdığımız acımasız API'yi çağırıyoruz
       const res = await fetch("/api/auth/account", {
         method: "DELETE",
       });
@@ -85,7 +90,6 @@ export default function SettingsPage() {
 
       if (res.ok) {
         showToast("Hesabınız ve tüm verileriniz kalıcı olarak silindi. Hoşça kalın... 🗑️", "success");
-        // Hesabı silinen adamı siteye yeni girmiş gibi Kayıt ekranına yolluyoruz
         router.push("/register");
         router.refresh();
       } else {
@@ -123,14 +127,46 @@ export default function SettingsPage() {
 
         <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
           <h3 className="font-semibold text-slate-700 mt-2 mb-2">Şifre Değiştir</h3>
+          
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Mevcut Şifreniz</label>
-            <input type="password" name="currentPassword" required className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
+            <div className="relative">
+              <input 
+                type={showCurrentPassword ? "text" : "password"} 
+                name="currentPassword" 
+                required 
+                className="w-full border border-slate-300 p-3 pr-16 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
+              >
+                {showCurrentPassword ? "GİZLE" : "GÖSTER"}
+              </button>
+            </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Yeni Şifreniz</label>
-            <input type="password" name="newPassword" required minLength={6} className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" />
+            <div className="relative">
+              <input 
+                type={showNewPassword ? "text" : "password"} 
+                name="newPassword" 
+                required 
+                minLength={6} 
+                className="w-full border border-slate-300 p-3 pr-16 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
+              >
+                {showNewPassword ? "GİZLE" : "GÖSTER"}
+              </button>
+            </div>
           </div>
+
           <div className="mt-4">
             <button 
               type="submit" 
