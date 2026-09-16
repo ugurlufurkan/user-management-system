@@ -1,142 +1,148 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/context/toast-context"; // Bildirim sistemini içeri aldık
 
 type Section = {
   id: string;
   name: string;
-  description: string;
-  createdAt: string;
 };
 
 export default function SectionsPage() {
+  const { showToast } = useToast();
   const [sections, setSections] = useState<Section[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Yeni bölüm ekleme ekranını açıp kapatmak için
-  const [isAdding, setIsAdding] = useState(false);
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  // API'den bölümleri çek
-  const fetchSections = async () => {
-    try {
-      const res = await fetch("/api/sections");
-      if (res.ok) {
-        const data = await res.json();
-        // API'nin dönüş yapısına göre `data` veya `data.data` olabilir (bizim response yapımıza göre)
-        setSections(data.data || data || []);
-      }
-    } catch (err) {
-      console.error("Bölümler çekilemedi", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     fetchSections();
   }, []);
 
-  // Yeni bölüm kaydet
+  const fetchSections = async () => {
+    try {
+      const res = await fetch("/api/sections");
+      const data = await res.json();
+      setSections(data.data || data || []);
+    } catch (error) {
+      console.error("Bölümler alınamadı:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddSection = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    if (!name.trim()) return;
 
+    setIsAdding(true);
     try {
       const res = await fetch("/api/sections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        setIsAdding(false);
+        showToast("Bölüm başarıyla eklendi! 🏢", "success");
         setName("");
-        setDescription("");
-        fetchSections(); // Kayıt başarılıysa listeyi yenile
+        fetchSections(); // Listeyi yenile
       } else {
-        const data = await res.json();
-        setError(data.error || "Bölüm eklenemedi.");
+        showToast(data.error || "Bölüm eklenemedi.", "error");
       }
-    } catch (err) {
-      setError("Sunucu hatası.");
+    } catch (error) {
+      showToast("Sunucu hatası oluştu.", "error");
+    } finally {
+      setIsAdding(false);
     }
   };
 
+  const handleDelete = async (id: string, sectionName: string) => {
+    const onay = confirm(`"${sectionName}" departmanını silmek istediğinize emin misiniz?`);
+    if (!onay) return;
+
+    try {
+      const res = await fetch(`/api/sections/${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        showToast("Departman sistemden silindi. 🗑️", "success");
+        // Sayfayı yenilemeden veriyi ekrandan siliyoruz (Çok daha hızlı hissettirir)
+        setSections(sections.filter(s => s.id !== id)); 
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Silme işlemi başarısız.", "error");
+      }
+    } catch (error) {
+      showToast("Sunucu ile iletişim kurulamadı.", "error");
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center mt-20 text-slate-500 animate-pulse text-lg">Departmanlar yükleniyor...</div>;
+  }
+
   return (
-    <div className="max-w-5xl mx-auto mt-10 mb-20">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Bölümler</h1>
-          <p className="text-slate-500 mt-1">Sistemde kayıtlı olan departmanların listesi</p>
-        </div>
-        {!isAdding && (
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="bg-slate-900 text-white px-5 py-2.5 rounded-lg hover:bg-slate-800 transition-colors font-medium shadow-sm"
+    <div className="max-w-4xl mx-auto mt-10 mb-20">
+      <h1 className="text-3xl font-bold text-slate-800 mb-2">Departman Yönetimi 🏢</h1>
+      <p className="text-slate-500 mb-10">Şirket içindeki tüm bölümleri (sections) buradan ekleyip silebilirsiniz.</p>
+
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+        <h2 className="text-lg font-bold text-slate-800 mb-4">Yeni Departman Ekle</h2>
+        <form onSubmit={handleAddSection} className="flex flex-col sm:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Örn: İnsan Kaynakları"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="flex-grow border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
+          />
+          <button
+            type="submit"
+            disabled={isAdding}
+            className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
           >
-            + Yeni Bölüm Ekle
+            {isAdding ? "Ekleniyor..." : "Ekle"}
           </button>
-        )}
+        </form>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">{error}</div>}
-
-      {isAdding && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Yeni Bölüm Oluştur</h2>
-          <form onSubmit={handleAddSection} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Bölüm Adı</label>
-              <input 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                required 
-                placeholder="Örn: Yazılım Departmanı"
-                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Açıklama</label>
-              <textarea 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
-                rows={3}
-                placeholder="Bu bölüm ne iş yapar?"
-                className="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-              />
-            </div>
-            <div className="flex gap-3 mt-2">
-              <button type="submit" className="bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">Kaydet</button>
-              <button type="button" onClick={() => setIsAdding(false)} className="bg-white border border-slate-300 text-slate-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors">İptal</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="text-center py-10 text-slate-500">Bölümler yükleniyor...</div>
-      ) : sections.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300 text-slate-500">
-          Sistemde henüz hiçbir bölüm bulunmuyor.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sections.map((section) => (
-            <div key={section.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col">
-              <h3 className="text-xl font-bold text-slate-800 mb-2">{section.name}</h3>
-              <p className="text-slate-600 mb-6 text-sm line-clamp-3">
-                {section.description || "Açıklama girilmemiş."}
-              </p>
-              <div className="text-xs text-slate-400 mt-auto pt-4 border-t border-slate-100 font-medium">
-                Oluşturulma: {new Date(section.createdAt).toLocaleDateString('tr-TR')}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* BÖLÜMLER LİSTESİ */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <h2 className="text-lg font-bold text-slate-800 p-6 border-b border-slate-100">Kayıtlı Departmanlar</h2>
+        
+        {sections.length === 0 ? (
+          <div className="p-10 text-center text-slate-500">Henüz hiç departman eklenmemiş.</div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {sections.map((section) => (
+              // group class'ı ile üzerine gelindiğinde sil butonunun görünmesini sağlayacağız
+              <li key={section.id} className="p-6 flex justify-between items-center hover:bg-slate-50 transition-colors group">
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
+                    {section.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="font-semibold text-slate-700 text-lg">{section.name}</span>
+                </div>
+                
+                {/* SİLME BUTONU (Sadece farenin üzerine gelindiğinde yavaşça belirir) */}
+                <button
+                  onClick={() => handleDelete(section.id, section.name)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium text-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                >
+                  Sil
+                </button>
+                
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
