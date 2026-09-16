@@ -7,8 +7,9 @@ import { useToast } from "@/context/toast-context";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { showToast } = useToast(); // BİLDİRİM FONKSİYONU
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,9 +34,8 @@ export default function LoginPage() {
         return;
       }
 
-      
       showToast("Başarıyla giriş yapıldı, yönlendiriliyorsunuz...", "success");
-      // Giriş başarılıysa profiline yollayalım
+      
       router.push("/profile");
       router.refresh(); 
     } catch (err) {
@@ -55,24 +55,35 @@ export default function LoginPage() {
             type="email" 
             name="email" 
             required 
-            className="w-full border border-slate-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-slate-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Şifre</label>
-          <input 
-            type="password" 
-            name="password" 
-            required 
-            className="w-full border border-slate-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              name="password" 
+              required 
+              className="w-full border border-slate-300 rounded-md p-3 pr-16 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+            />
+            
+            {/* Göster/Gizle Butonu */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-blue-600 focus:outline-none transition-colors"
+            >
+              {showPassword ? "GİZLE" : "GÖSTER"}
+            </button>
+          </div>
         </div>
 
         <button 
           type="submit" 
           disabled={loading}
-          className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-md transition-colors disabled:bg-blue-400"
+          className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-md transition-colors disabled:bg-blue-400 shadow-sm"
         >
           {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
         </button>
