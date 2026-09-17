@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SYSTEM — Enterprise Management",
-  description: "Kurumsal kullanıcı ve departman yönetim platformu",
+  title: "User Management System | Aksiyonsoft",
+  description: "Aksiyonsoft kurumsal kullanıcı ve departman yönetim platformu",
 };
 
 export default function RootLayout({
