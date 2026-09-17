@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LayoutDashboard, Users, Building2, HelpCircle, Settings, Shield, FileText } from "lucide-react";
 
 const platformLinks = [
@@ -20,21 +21,21 @@ export default function Footer() {
           
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 bg-indigo-600 rounded-md flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 4.5L8 1.5L14 4.5V11.5L8 14.5L2 11.5V4.5Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M2 4.5L8 7.5L14 4.5" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M8 7.5V14.5" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                </svg>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-[38px] h-[38px] bg-white rounded-md p-1 flex items-center justify-center">
+                <Image src="/logo.png" alt="Aksiyonsoft Logo" width={32} height={32} className="object-contain" />
               </div>
-              <div>
-                <span className="text-sm font-bold text-zinc-200 tracking-tight">SYSTEM</span>
-                <span className="text-[10px] text-zinc-500 ml-1.5 tracking-widest uppercase">Enterprise</span>
+              <div className="flex flex-col justify-center">
+                <span className="text-sm font-bold text-zinc-200 tracking-tight leading-tight">
+                  User Management System
+                </span>
+                <span className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase mt-[1px]">
+                  Aksiyonsoft
+                </span>
               </div>
             </div>
             <p className="text-zinc-500 text-sm leading-relaxed max-w-sm">
-              Kurumsal düzeyde kullanıcı, departman ve oturum yönetimi sağlayan güvenli platform. Tüm verileriniz şifreli ve koruma altında.
+              Aksiyonsoft güvencesiyle kurumsal düzeyde çalışan, departman ve oturum yönetimi sağlayan güvenli platform. 
             </p>
           </div>
           
@@ -73,7 +74,7 @@ export default function Footer() {
       {/* Alt Çizgi */}
       <div className="border-t border-zinc-800">
         <div className="max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-zinc-600">
-          <p>&copy; {new Date().getFullYear()} System Enterprise. Tüm hakları saklıdır.</p>
+          <p>&copy; {new Date().getFullYear()} Aksiyonsoft Yazılım. Tüm hakları saklıdır.</p>
           <div className="flex items-center gap-5">
             <span className="flex items-center gap-1.5 hover:text-zinc-400 cursor-pointer transition-colors">
               <Shield size={12} strokeWidth={1.8} /> Gizlilik
