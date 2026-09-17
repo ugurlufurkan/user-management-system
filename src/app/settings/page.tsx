@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/toast-context";
 
+type Section = {
+  id: string;
+  name: string;
+};
+
 export default function SettingsPage() {
   const router = useRouter();
   const { showToast } = useToast();
@@ -13,6 +18,10 @@ export default function SettingsPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   
+  // Seçili departman ID'sini ve Tüm departmanlar listesini tutacak state'ler
+  const [sectionId, setSectionId] = useState("");
+  const [sections, setSections] = useState<Section[]>([]);
+  
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false); 
   const [isDeleting, setIsDeleting] = useState(false); 
@@ -21,47 +30,59 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/auth/me");
-        if (!res.ok) {
+        // Kullanıcı verisi ve Departmanlar listesini aynı anda (Paralel) çekiyoruz
+        const [userRes, sectionsRes] = await Promise.all([
+          fetch("/api/auth/me"),
+          fetch("/api/sections")
+        ]);
+        
+        if (!userRes.ok) {
           router.push("/login");
           return;
         }
-        const data = await res.json();
-        setEmail(data.account.email);
         
-        if (data.profile) {
-          setFirstName(data.profile.firstName || "");
-          setLastName(data.profile.lastName || "");
+        const userData = await userRes.json();
+        const sectionsData = await sectionsRes.json();
+
+        // 1. Kullanıcı bilgilerini doldur
+        setEmail(userData.account.email);
+        if (userData.profile) {
+          setFirstName(userData.profile.firstName || "");
+          setLastName(userData.profile.lastName || "");
+          setSectionId(userData.profile.sectionId || ""); // Varsa mevcut departmanını seçili yap
         }
+
+        // 2. Açılır menü için departman listesini doldur
+        setSections(sectionsData.data || sectionsData || []);
+
       } catch (error) {
-        console.error("Kullanıcı verisi alınamadı", error);
+        console.error("Veriler alınamadı", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchData();
   }, [router]);
 
-  // Profil (İsim) Güncelleme Formunun API'ye Gönderilmesi
   const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSavingProfile(true);
     
     try {
+      // JSON Paketi içine artık seçilen "sectionId" bilgisini de koyup yolluyoruz
       const res = await fetch("/api/auth/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName }),
+        body: JSON.stringify({ firstName, lastName, sectionId }), 
       });
 
       const data = await res.json();
 
       if (res.ok) {
         showToast("Profil bilgileriniz başarıyla güncellendi! ✅", "success");
-        // Navbar'da vs ismin değişme ihtimaline karşı sayfayı tazeliyoruz
         router.refresh(); 
       } else {
         showToast(data.error || "Profil güncellenemedi.", "error");
@@ -144,7 +165,7 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Hesap Ayarları ⚙️</h1>
       <p className="text-slate-500 mb-10">Kişisel bilgilerinizi ve güvenlik tercihlerinizi buradan yönetebilirsiniz.</p>
 
-      {/* PROFİL BİLGİLERİ */}
+      {/* PROFİL BİLGİLERİ VE DEPARTMAN */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
         <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Kişisel Bilgiler</h2>
         
@@ -171,7 +192,26 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+
+          {/*AÇILIR MENÜ (DEPARTMAN SEÇİMİ) */}
           <div className="mt-2">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Çalıştığınız Departman</label>
+            <select 
+              value={sectionId} 
+              onChange={(e) => setSectionId(e.target.value)}
+              className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-white"
+            >
+              <option value="">-- Departman Seçilmedi --</option>
+              {sections.map(section => (
+                <option key={section.id} value={section.id}>
+                  {section.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-slate-400 mt-1">Eğer bir departmana bağlı değilseniz boş bırakabilirsiniz.</p>
+          </div>
+
+          <div className="mt-4">
             <button 
               type="submit" 
               disabled={isSavingProfile}
