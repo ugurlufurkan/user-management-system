@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/toast-context";
+import { User, Lock, Building2, Trash2, ShieldAlert, Eye, EyeOff } from "lucide-react";
 
 type Section = {
   id: string;
@@ -12,300 +13,249 @@ type Section = {
 export default function SettingsPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [loading, setLoading] = useState(true);
-  
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  
-  // Seçili departman ID'sini ve Tüm departmanlar listesini tutacak state'ler
-  const [sectionId, setSectionId] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
   const [sections, setSections] = useState<Section[]>([]);
-  
-  const [isSavingPassword, setIsSavingPassword] = useState(false);
-  const [isSavingProfile, setIsSavingProfile] = useState(false); 
-  const [isDeleting, setIsDeleting] = useState(false); 
+  const [loading, setLoading] = useState(true);
 
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
-        // Kullanıcı verisi ve Departmanlar listesini aynı anda (Paralel) çekiyoruz
-        const [userRes, sectionsRes] = await Promise.all([
+        const [meRes, sectionsRes] = await Promise.all([
           fetch("/api/auth/me"),
           fetch("/api/sections")
         ]);
-        
-        if (!userRes.ok) {
+
+        if (!meRes.ok) {
           router.push("/login");
           return;
         }
-        
-        const userData = await userRes.json();
+
+        const meData = await meRes.json();
         const sectionsData = await sectionsRes.json();
 
-        // 1. Kullanıcı bilgilerini doldur
-        setEmail(userData.account.email);
-        if (userData.profile) {
-          setFirstName(userData.profile.firstName || "");
-          setLastName(userData.profile.lastName || "");
-          setSectionId(userData.profile.sectionId || ""); // Varsa mevcut departmanını seçili yap
-        }
-
-        // 2. Açılır menü için departman listesini doldur
+        setUser(meData);
         setSections(sectionsData.data || sectionsData || []);
-
       } catch (error) {
         console.error("Veriler alınamadı", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchInitialData();
   }, [router]);
 
-  const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSavingProfile(true);
-    
+    setSavingProfile(true);
+
+    const formData = new FormData(e.currentTarget);
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+    const sectionId = formData.get("sectionId");
+
+    const payload: any = { firstName, lastName };
+    if (sectionId) payload.sectionId = sectionId;
+
     try {
-      // JSON Paketi içine artık seçilen "sectionId" bilgisini de koyup yolluyoruz
       const res = await fetch("/api/auth/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, sectionId }), 
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        showToast("Profil bilgileriniz başarıyla güncellendi! ✅", "success");
-        router.refresh(); 
+        showToast("Kişisel bilgiler başarıyla güncellendi!", "success");
+        router.refresh();
       } else {
-        showToast(data.error || "Profil güncellenemedi.", "error");
+        const data = await res.json();
+        showToast(data.error || "Güncelleme başarısız.", "error");
       }
-    } catch (error) {
-      showToast("Sunucuyla iletişim kurulamadı.", "error");
+    } catch {
+      showToast("Sunucu hatası.", "error");
     } finally {
-      setIsSavingProfile(false);
+      setSavingProfile(false);
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSavingPassword(true);
-    
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    setSavingPassword(true);
+
+    const formData = new FormData(e.currentTarget);
     const currentPassword = formData.get("currentPassword");
     const newPassword = formData.get("newPassword");
 
     try {
       const res = await fetch("/api/auth/password", {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        showToast("Şifreniz başarıyla güncellendi! 🔐", "success");
-        form.reset();
-        setShowCurrentPassword(false);
-        setShowNewPassword(false);
+        showToast("Şifre başarıyla güncellendi!", "success");
+        (e.target as HTMLFormElement).reset();
       } else {
-        showToast(data.error || "Şifre değiştirilemedi.", "error");
+        const data = await res.json();
+        showToast(data.error || "Şifre güncellenemedi.", "error");
       }
-    } catch (error) {
-      showToast("Sunucuyla iletişim kurulamadı.", "error");
+    } catch {
+      showToast("Sunucu hatası.", "error");
     } finally {
-      setIsSavingPassword(false);
+      setSavingPassword(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    const onay1 = confirm("⚠️ DİKKAT: Hesabınızı silmek üzeresiniz. Bu işlem GERİ ALINAMAZ! Emin misiniz?");
+    const onay1 = confirm("DİKKAT: Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.");
     if (!onay1) return;
 
-    const onay2 = confirm("Gerçekten tüm aile ve kız arkadaş verilerinizi kalıcı olarak silmek istiyor musunuz? Son Kararınız mı?");
+    const onay2 = confirm("Emin misiniz? Hesabınız, aile ve kız arkadaş verileriniz dahil tamamen silinecek.");
     if (!onay2) return;
 
-    setIsDeleting(true);
-
     try {
-      const res = await fetch("/api/auth/account", {
-        method: "DELETE",
-      });
-
+      const res = await fetch("/api/auth/me", { method: "DELETE" });
       if (res.ok) {
-        showToast("Hesabınız kalıcı olarak silindi. Hoşça kalın... 🗑️", "success");
+        alert("Hesabınız ve tüm verileriniz başarıyla silindi. Elveda!");
         router.push("/register");
-        router.refresh();
       } else {
-        const data = await res.json();
-        showToast(data.error || "Hesap silinemedi.", "error");
-        setIsDeleting(false);
+        showToast("Hesap silinirken hata oluştu.", "error");
       }
-    } catch (error) {
-      showToast("Sunucuyla iletişim kurulamadı.", "error");
-      setIsDeleting(false);
+    } catch {
+      showToast("Sunucu hatası.", "error");
     }
   };
 
-  if (loading) {
-    return <div className="text-center mt-20 text-slate-500 animate-pulse text-lg">Ayarlarınız yükleniyor...</div>;
-  }
+  if (loading) return <div className="p-12 text-center text-sm text-zinc-400">Ayarlar yükleniyor...</div>;
+  if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 mb-20">
-      <h1 className="text-3xl font-bold text-slate-800 mb-2">Hesap Ayarları ⚙️</h1>
-      <p className="text-slate-500 mb-10">Kişisel bilgilerinizi ve güvenlik tercihlerinizi buradan yönetebilirsiniz.</p>
-
-      {/* PROFİL BİLGİLERİ VE DEPARTMAN */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
-        <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Kişisel Bilgiler</h2>
-        
-        <form onSubmit={handleProfileUpdate} className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Adınız</label>
-              <input 
-                type="text" 
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required 
-                className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" 
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Soyadınız</label>
-              <input 
-                type="text" 
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required 
-                className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" 
-              />
-            </div>
-          </div>
-
-          {/*AÇILIR MENÜ (DEPARTMAN SEÇİMİ) */}
-          <div className="mt-2">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Çalıştığınız Departman</label>
-            <select 
-              value={sectionId} 
-              onChange={(e) => setSectionId(e.target.value)}
-              className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-white"
-            >
-              <option value="">-- Departman Seçilmedi --</option>
-              {sections.map(section => (
-                <option key={section.id} value={section.id}>
-                  {section.name}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-slate-400 mt-1">Eğer bir departmana bağlı değilseniz boş bırakabilirsiniz.</p>
-          </div>
-
-          <div className="mt-4">
-            <button 
-              type="submit" 
-              disabled={isSavingProfile}
-              className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:bg-blue-400 disabled:cursor-wait"
-            >
-              {isSavingProfile ? "Kaydediliyor..." : "Bilgileri Kaydet"}
-            </button>
-          </div>
-        </form>
+    <div className="max-w-3xl mx-auto mt-4 mb-12">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Hesap Ayarları</h1>
+        <p className="text-[13px] text-zinc-500 mt-0.5">Kişisel bilgilerinizi, departmanınızı ve güvenlik ayarlarınızı yönetin</p>
       </div>
 
-      {/* GÜVENLİK */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
-        <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Güvenlik</h2>
+      <div className="flex flex-col gap-6">
         
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Kayıtlı E-posta Adresi</label>
-          <input 
-            type="email" 
-            value={email}
-            disabled
-            className="w-full border border-slate-200 bg-slate-50 p-3 rounded-lg text-slate-500 cursor-not-allowed" 
-          />
-          <p className="text-xs text-slate-400 mt-2">Sistem güvenliği gereği e-posta adresi şu an için değiştirilemez.</p>
+        {/* Profile Card */}
+        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b border-zinc-100 flex items-center gap-2.5">
+            <User size={18} strokeWidth={1.8} className="text-indigo-600" />
+            <h2 className="text-sm font-semibold text-zinc-900">Kişisel Bilgiler</h2>
+          </div>
+          <div className="p-6">
+            <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-[13px] font-medium text-zinc-700 mb-1.5">Adınız</label>
+                  <input type="text" name="firstName" defaultValue={user.profile?.firstName} required 
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-zinc-700 mb-1.5">Soyadınız</label>
+                  <input type="text" name="lastName" defaultValue={user.profile?.lastName} required 
+                    className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-[13px] font-medium text-zinc-700 mb-1.5 flex items-center gap-1.5">
+                  <Building2 size={14} strokeWidth={1.8} className="text-zinc-400" />
+                  Departman (Section)
+                </label>
+                <select 
+                  name="sectionId" 
+                  defaultValue={user.profile?.sectionId || ""} 
+                  className="w-full px-3.5 py-2.5 border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all appearance-none bg-white"
+                >
+                  <option value="">-- Departman Seçin --</option>
+                  {sections.map(sec => (
+                    <option key={sec.id} value={sec.id}>{sec.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end mt-2">
+                <button type="submit" disabled={savingProfile} 
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-semibold py-2 px-5 rounded-lg transition-colors disabled:bg-indigo-400">
+                  {savingProfile ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
-        <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
-          <h3 className="font-semibold text-slate-700 mt-2 mb-2">Şifre Değiştir</h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Mevcut Şifreniz</label>
-            <div className="relative">
-              <input 
-                type={showCurrentPassword ? "text" : "password"} 
-                name="currentPassword" 
-                required 
-                className="w-full border border-slate-300 p-3 pr-16 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" 
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
-              >
-                {showCurrentPassword ? "GİZLE" : "GÖSTER"}
-              </button>
-            </div>
+        {/* Security Card */}
+        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b border-zinc-100 flex items-center gap-2.5">
+            <Lock size={18} strokeWidth={1.8} className="text-indigo-600" />
+            <h2 className="text-sm font-semibold text-zinc-900">Güvenlik ve Şifre</h2>
           </div>
+          <div className="p-6">
+            <form onSubmit={handleUpdatePassword} className="flex flex-col gap-5">
+              <div>
+                <label className="block text-[13px] font-medium text-zinc-700 mb-1.5">Mevcut Şifre</label>
+                <div className="relative">
+                  <input type={showCurrentPassword ? "text" : "password"} name="currentPassword" required 
+                    className="w-full px-3.5 py-2.5 pr-10 border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none">
+                    {showCurrentPassword ? <EyeOff size={16} strokeWidth={1.8} /> : <Eye size={16} strokeWidth={1.8} />}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-[13px] font-medium text-zinc-700 mb-1.5">Yeni Şifre</label>
+                <div className="relative">
+                  <input type={showNewPassword ? "text" : "password"} name="newPassword" required minLength={6}
+                    className="w-full px-3.5 py-2.5 pr-10 border border-zinc-200 rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all" />
+                  <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none">
+                    {showNewPassword ? <EyeOff size={16} strokeWidth={1.8} /> : <Eye size={16} strokeWidth={1.8} />}
+                  </button>
+                </div>
+                <p className="text-xs text-zinc-500 mt-1.5">Şifreniz en az 6 karakter uzunluğunda olmalıdır.</p>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Yeni Şifreniz</label>
-            <div className="relative">
-              <input 
-                type={showNewPassword ? "text" : "password"} 
-                name="newPassword" 
-                required 
-                minLength={6} 
-                className="w-full border border-slate-300 p-3 pr-16 rounded-lg focus:ring-2 focus:ring-slate-800 outline-none transition-shadow" 
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
-              >
-                {showNewPassword ? "GİZLE" : "GÖSTER"}
-              </button>
-            </div>
+              <div className="flex justify-end mt-2">
+                <button type="submit" disabled={savingPassword} 
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-semibold py-2 px-5 rounded-lg transition-colors disabled:bg-indigo-400">
+                  {savingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+                </button>
+              </div>
+            </form>
           </div>
+        </div>
 
-          <div className="mt-4">
+        {/* Danger Zone */}
+        <div className="border border-red-200 rounded-xl overflow-hidden shadow-sm bg-red-50/30">
+          <div className="px-6 py-5 border-b border-red-100 flex items-center gap-2.5 bg-white/50">
+            <ShieldAlert size={18} strokeWidth={1.8} className="text-red-600" />
+            <h2 className="text-sm font-semibold text-red-900">Tehlikeli Bölge</h2>
+          </div>
+          <div className="p-6">
+            <p className="text-[13px] text-red-800/80 mb-5 max-w-xl leading-relaxed">
+              Hesabınızı silmek tüm kişisel verilerinizi, aile bilgilerinizi ve departman atamanızı kalıcı olarak veritabanından siler. Bu işlem geri alınamaz.
+            </p>
             <button 
-              type="submit" 
-              disabled={isSavingPassword}
-              className="bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:bg-slate-600 disabled:cursor-wait"
+              onClick={handleDeleteAccount} 
+              className="flex items-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-[13px] font-semibold py-2 px-5 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500/20"
             >
-              {isSavingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+              <Trash2 size={16} strokeWidth={1.8} /> Hesabı Kalıcı Olarak Sil
             </button>
           </div>
-        </form>
-      </div>
-
-      {/* TEHLİKELİ BÖLGE */}
-      <div className="bg-red-50 p-8 rounded-xl border border-red-200 relative overflow-hidden">
-        <div className="absolute -right-4 -bottom-4 text-red-100 text-9xl pointer-events-none">⚠️</div>
-        <h2 className="text-xl font-bold text-red-700 mb-2 relative z-10">Tehlikeli Bölge</h2>
-        <p className="text-sm text-red-600 mb-6 max-w-md relative z-10">
-          Hesabınızı silmek geri alınamaz bir işlemdir. Kaydettiğiniz tüm aile ve özel bilgileriniz kalıcı olarak veritabanından silinir.
-        </p>
-        <button 
-          onClick={handleDeleteAccount}
-          disabled={isDeleting}
-          className="bg-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md relative z-10 disabled:bg-red-400 disabled:cursor-wait"
-        >
-          {isDeleting ? "Hesap Siliniyor..." : "Hesabımı Kalıcı Olarak Sil"}
-        </button>
+        </div>
+        
       </div>
     </div>
   );
