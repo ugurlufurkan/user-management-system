@@ -8,18 +8,23 @@ export default function SettingsPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
   
-  const [isSaving, setIsSaving] = useState(false);
+  const [email, setEmail] = useState("");
+  // Ad ve Soyad state'leri eklendi
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false); // Profil kaydetme butonu için
   const [isDeleting, setIsDeleting] = useState(false); 
 
-  // İki şifre kutusu için ayrı ayrı göster/gizle state'leri
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        // Mevcut kullanıcı bilgilerini (API'mizden) çekiyoruz
         const res = await fetch("/api/auth/me");
         if (!res.ok) {
           router.push("/login");
@@ -27,6 +32,12 @@ export default function SettingsPage() {
         }
         const data = await res.json();
         setEmail(data.account.email);
+        
+        // Eğer adamın profil (isim) bilgileri varsa, input kutularına otomatik dolduruyoruz
+        if (data.profile) {
+          setFirstName(data.profile.firstName || "");
+          setLastName(data.profile.lastName || "");
+        }
       } catch (error) {
         console.error("Kullanıcı verisi alınamadı", error);
       } finally {
@@ -37,13 +48,21 @@ export default function SettingsPage() {
     fetchUser();
   }, [router]);
 
+  // Profil Bilgileri Formunu Yakalama
+  const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    // API'sini bir sonraki adımda (120. Commit) yazacağız, şimdilik uyarı versin:
+    showToast("İsim güncelleme arka planı (API) henüz bağlanmadı!", "error");
+    setIsSavingProfile(false);
+  };
+
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSaving(true);
+    setIsSavingPassword(true);
     
     const form = e.currentTarget;
     const formData = new FormData(form);
-    
     const currentPassword = formData.get("currentPassword");
     const newPassword = formData.get("newPassword");
 
@@ -59,7 +78,6 @@ export default function SettingsPage() {
       if (res.ok) {
         showToast("Şifreniz başarıyla güncellendi! 🔐", "success");
         form.reset();
-        // İşlem bitince güvenlik için açık olan şifreleri tekrar gizliyoruz
         setShowCurrentPassword(false);
         setShowNewPassword(false);
       } else {
@@ -68,7 +86,7 @@ export default function SettingsPage() {
     } catch (error) {
       showToast("Sunucuyla iletişim kurulamadı.", "error");
     } finally {
-      setIsSaving(false);
+      setIsSavingPassword(false);
     }
   };
 
@@ -86,13 +104,12 @@ export default function SettingsPage() {
         method: "DELETE",
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        showToast("Hesabınız ve tüm verileriniz kalıcı olarak silindi. Hoşça kalın... 🗑️", "success");
+        showToast("Hesabınız kalıcı olarak silindi. Hoşça kalın... 🗑️", "success");
         router.push("/register");
         router.refresh();
       } else {
+        const data = await res.json();
         showToast(data.error || "Hesap silinemedi.", "error");
         setIsDeleting(false);
       }
@@ -109,8 +126,48 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl mx-auto mt-10 mb-20">
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Hesap Ayarları ⚙️</h1>
-      <p className="text-slate-500 mb-10">Güvenlik ve hesap tercihlerinizi buradan yönetebilirsiniz.</p>
+      <p className="text-slate-500 mb-10">Kişisel bilgilerinizi ve güvenlik tercihlerinizi buradan yönetebilirsiniz.</p>
 
+      {/* 1. PROFİL BİLGİLERİ */}
+      <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
+        <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Kişisel Bilgiler</h2>
+        
+        <form onSubmit={handleProfileUpdate} className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Adınız</label>
+              <input 
+                type="text" 
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required 
+                className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" 
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Soyadınız</label>
+              <input 
+                type="text" 
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required 
+                className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" 
+              />
+            </div>
+          </div>
+          <div className="mt-2">
+            <button 
+              type="submit" 
+              disabled={isSavingProfile}
+              className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:bg-blue-400 disabled:cursor-wait"
+            >
+              {isSavingProfile ? "Kaydediliyor..." : "Bilgileri Kaydet"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* 2. BÖLÜM: GÜVENLİK (ŞİFRE VE MAİL) */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
         <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Güvenlik</h2>
         
@@ -170,15 +227,16 @@ export default function SettingsPage() {
           <div className="mt-4">
             <button 
               type="submit" 
-              disabled={isSaving}
+              disabled={isSavingPassword}
               className="bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:bg-slate-600 disabled:cursor-wait"
             >
-              {isSaving ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+              {isSavingPassword ? "Güncelleniyor..." : "Şifreyi Güncelle"}
             </button>
           </div>
         </form>
       </div>
 
+      {/* 3. BÖLÜM: TEHLİKELİ BÖLGE (HESAP SİLME) */}
       <div className="bg-red-50 p-8 rounded-xl border border-red-200 relative overflow-hidden">
         <div className="absolute -right-4 -bottom-4 text-red-100 text-9xl pointer-events-none">⚠️</div>
         <h2 className="text-xl font-bold text-red-700 mb-2 relative z-10">Tehlikeli Bölge</h2>
