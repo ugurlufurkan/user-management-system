@@ -16,6 +16,9 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Sıralama Yönünü tutan state (asc = A'dan Z'ye, desc = Z'den A'ya)
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -38,12 +41,25 @@ export default function UsersPage() {
     fetchUsers();
   }, [showToast]);
 
+  // 1. Önce Arama (Filtreleme) yap
   const filteredUsers = users.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
     const deptName = (user.sectionName || "Atanmadı").toLowerCase();
     const search = searchTerm.toLowerCase();
     
     return fullName.includes(search) || deptName.includes(search);
+  });
+
+  // 2. Sonra çıkan sonucu A'dan Z'ye veya Z'den A'ya sırala (localeCompare = Türkçe karakter destekli sıralama yapar)
+  const sortedAndFilteredUsers = filteredUsers.sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    
+    if (sortOrder === "asc") {
+      return nameA.localeCompare(nameB);
+    } else {
+      return nameB.localeCompare(nameA);
+    }
   });
 
   return (
@@ -54,24 +70,36 @@ export default function UsersPage() {
           <p className="text-slate-500">Sistemdeki tüm kayıtlı kullanıcıları ve departmanlarını inceleyin.</p>
         </div>
 
-        <div className="w-full md:w-72 relative">
-          <input
-            type="text"
-            placeholder="İsim veya Departman ara..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
-          />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+        {/* Arama Kutusu ve Sıralama Butonu Yan Yana */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-72 relative">
+            <input
+              type="text"
+              placeholder="İsim veya Departman ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
+            />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          </div>
+
+          {/* SIRALAMA (SORTING) BUTONU */}
+          <button
+            onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+            title={sortOrder === "asc" ? "Z'den A'ya Sırala" : "A'dan Z'ye Sırala"}
+          >
+            <span>{sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
+            <span className="text-lg">{sortOrder === "asc" ? "↓" : "↑"}</span>
+          </button>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         {loading ? (
           <div className="p-10 text-center text-slate-500 animate-pulse text-lg">Kullanıcılar yükleniyor...</div>
-        ) : filteredUsers.length === 0 ? (
+        ) : sortedAndFilteredUsers.length === 0 ? (
           
-          /* BOŞ DURUM (EMPTY STATE) TASARIMI */
           <div className="p-16 flex flex-col items-center justify-center text-center">
             <div className="text-7xl mb-6 opacity-80 filter drop-shadow-sm">
               {searchTerm ? "🕵️‍♂️" : "📭"}
@@ -96,7 +124,8 @@ export default function UsersPage() {
 
         ) : (
           <ul className="divide-y divide-slate-100">
-            {filteredUsers.map((user) => (
+            {/* Haritası çıkarılan (map edilen) dizi artık "sortedAndFilteredUsers" */}
+            {sortedAndFilteredUsers.map((user) => (
               <li key={user.id} className="hover:bg-slate-50 transition-colors">
                 <Link href={`/users/${user.id}`} className="p-6 flex items-center justify-between group">
                   

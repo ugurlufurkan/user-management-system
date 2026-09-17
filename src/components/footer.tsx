@@ -39,7 +39,7 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} UserSystem. Tüm hakları saklıdır.</p>
           <div className="flex items-center gap-6 font-medium">
             <span className="text-blue-400/80 bg-blue-900/30 px-3 py-1 rounded-full text-xs border border-blue-800/50">
-              v1.0.0 Stable
+              v1.2.0 Stable
             </span>
             <span className="text-slate-500 hover:text-slate-300 transition-colors cursor-pointer">
               Aksiyon Soft tarafından geliştirildi.
