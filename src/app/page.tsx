@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Users, Building2, Activity, ArrowUpRight, TrendingUp } from "lucide-react";
 
 type UserProfile = {
@@ -83,15 +84,22 @@ export default function Home() {
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 rounded-full px-3.5 py-1 mb-6">
             <TrendingUp size={13} strokeWidth={2} className="text-indigo-400" />
-            <span className="text-[11px] font-semibold text-indigo-300 tracking-widest uppercase">Enterprise Platform v1.2</span>
+            <span className="text-[11px] font-semibold text-indigo-300 tracking-widest uppercase">Aksiyonsoft Enterprise v1.2</span>
           </div>
           
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4 leading-[1.15]">
-            Kullanıcı Yönetim<br className="hidden sm:block" /> Platformuna Hoş Geldiniz
-          </h1>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 bg-white rounded-xl p-1 flex items-center justify-center shadow-lg">
+              <Image src="/logo.png" alt="Aksiyonsoft Logo" width={44} height={44} className="object-contain" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
+                User Management
+              </h1>
+            </div>
+          </div>
           
           <p className="text-zinc-400 text-base sm:text-lg mb-8 max-w-lg leading-relaxed">
-            Departmanları, çalışanları ve oturum bilgilerini tek bir merkezden güvenle yönetin.
+            Aksiyonsoft güvencesiyle departmanları, çalışanları ve oturum bilgilerini tek bir merkezden güvenle yönetin.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3">
@@ -130,12 +138,7 @@ export default function Home() {
               </div>
             </div>
           );
-
-          return card.href ? (
-            <Link key={card.label} href={card.href}>{content}</Link>
-          ) : (
-            <div key={card.label}>{content}</div>
-          );
+          return card.href ? <Link key={card.label} href={card.href}>{content}</Link> : <div key={card.label}>{content}</div>;
         })}
       </div>
 
