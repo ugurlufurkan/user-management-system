@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/toast-context";
-import { Users, Edit2, Plus, Save, X } from "lucide-react";
+import { Users, Edit2, Plus, Save, X, Trash2 } from "lucide-react";
 
 type GFFamilyInfo = { id: string; fatherName: string; motherName: string; siblingCount: number; };
 
@@ -46,6 +46,22 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm("Kız arkadaş aile bilgilerini tamamen silmek istediğinize emin misiniz?")) return;
+    
+    try {
+      const res = await fetch(`/api/users/${userId}/girlfriend-family`, { method: "DELETE" });
+      if (res.ok) {
+        setGfFamilyInfo(null);
+        showToast("Aile bilgileri başarıyla silindi.", "success");
+      } else {
+        showToast("Silme işlemi başarısız.", "error");
+      }
+    } catch {
+      showToast("Sunucu hatası.", "error");
+    }
+  };
+
   if (loading) return (
     <div className="bg-white border border-zinc-200/80 rounded-xl p-6 shadow-sm">
       <div className="animate-pulse space-y-4">
@@ -63,12 +79,22 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
           <h2 className="text-sm font-semibold text-zinc-900">Kız Arkadaş Aile Bilgileri</h2>
         </div>
         {!isReadOnly && !isEditing && (
-          <button 
-            onClick={() => setIsEditing(true)} 
-            className="flex items-center gap-1.5 text-xs font-semibold bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            {gfFamilyInfo ? <><Edit2 size={14} strokeWidth={2}/> Düzenle</> : <><Plus size={14} strokeWidth={2}/> Ekle</>}
-          </button>
+          <div className="flex items-center gap-2">
+            {gfFamilyInfo ? (
+              <>
+                <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 text-xs font-semibold bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 px-3 py-1.5 rounded-lg transition-colors">
+                  <Edit2 size={14} strokeWidth={2}/> Düzenle
+                </button>
+                <button onClick={handleDelete} className="flex items-center gap-1.5 text-xs font-semibold bg-red-50 text-red-600 hover:text-red-700 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                  <Trash2 size={14} strokeWidth={2}/> Sil
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 text-xs font-semibold bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 px-3 py-1.5 rounded-lg transition-colors">
+                <Plus size={14} strokeWidth={2}/> Ekle
+              </button>
+            )}
+          </div>
         )}
       </div>
 
