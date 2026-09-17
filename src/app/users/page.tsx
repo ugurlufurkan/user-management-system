@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/context/toast-context";
+import { Search, ArrowUpRight, ArrowDownAZ, ArrowUpZA, UserX, Inbox } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -16,8 +17,6 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Sıralama Yönünü tutan state (asc = A'dan Z'ye, desc = Z'den A'ya)
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
@@ -25,140 +24,119 @@ export default function UsersPage() {
       try {
         const res = await fetch("/api/users");
         const data = await res.json();
-
         if (res.ok) {
           setUsers(data.data || data || []);
         } else {
           showToast("Kullanıcılar alınamadı", "error");
         }
-      } catch (error) {
+      } catch {
         showToast("Sunucuya bağlanılamadı", "error");
       } finally {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, [showToast]);
 
-  // 1. Önce Arama (Filtreleme) yap
   const filteredUsers = users.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
     const deptName = (user.sectionName || "Atanmadı").toLowerCase();
     const search = searchTerm.toLowerCase();
-    
     return fullName.includes(search) || deptName.includes(search);
   });
 
-  // 2. Sonra çıkan sonucu A'dan Z'ye veya Z'den A'ya sırala (localeCompare = Türkçe karakter destekli sıralama yapar)
-  const sortedAndFilteredUsers = filteredUsers.sort((a, b) => {
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
     const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
     const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
-    
-    if (sortOrder === "asc") {
-      return nameA.localeCompare(nameB);
-    } else {
-      return nameB.localeCompare(nameA);
-    }
+    return sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
   });
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 mb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div className="mt-4 mb-12">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Üye Rehberi 👥</h1>
-          <p className="text-slate-500">Sistemdeki tüm kayıtlı kullanıcıları ve departmanlarını inceleyin.</p>
+          <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Üye Rehberi</h1>
+          <p className="text-[13px] text-zinc-500 mt-0.5">Sistemdeki tüm kayıtlı kullanıcıları ve departmanlarını inceleyin</p>
         </div>
 
-        {/* Arama Kutusu ve Sıralama Butonu Yan Yana */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="w-full sm:w-72 relative">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search size={16} strokeWidth={1.8} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
               type="text"
-              placeholder="İsim veya Departman ara..."
+              placeholder="İsim veya departman ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
+              className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400
+                focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
           </div>
 
-          {/* SIRALAMA (SORTING) BUTONU */}
           <button
             onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
-            title={sortOrder === "asc" ? "Z'den A'ya Sırala" : "A'dan Z'ye Sırala"}
+            className="flex items-center justify-center w-10 h-10 border border-zinc-200 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-colors duration-200 shrink-0"
+            title={sortOrder === "asc" ? "Z'den A'ya sırala" : "A'dan Z'ye sırala"}
+            aria-label={sortOrder === "asc" ? "Z'den A'ya sırala" : "A'dan Z'ye sırala"}
           >
-            <span>{sortOrder === "asc" ? "A-Z" : "Z-A"}</span>
-            <span className="text-lg">{sortOrder === "asc" ? "↓" : "↑"}</span>
+            {sortOrder === "asc" ? <ArrowDownAZ size={18} strokeWidth={1.8} /> : <ArrowUpZA size={18} strokeWidth={1.8} />}
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* List */}
+      <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-10 text-center text-slate-500 animate-pulse text-lg">Kullanıcılar yükleniyor...</div>
-        ) : sortedAndFilteredUsers.length === 0 ? (
-          
+          <div className="p-12 text-center text-sm text-zinc-400">Kullanıcılar yükleniyor...</div>
+        ) : sortedUsers.length === 0 ? (
           <div className="p-16 flex flex-col items-center justify-center text-center">
-            <div className="text-7xl mb-6 opacity-80 filter drop-shadow-sm">
-              {searchTerm ? "🕵️‍♂️" : "📭"}
+            <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-4">
+              {searchTerm ? <UserX size={22} strokeWidth={1.5} className="text-zinc-400" /> : <Inbox size={22} strokeWidth={1.5} className="text-zinc-400" />}
             </div>
-            <h3 className="text-2xl font-bold text-slate-700 mb-3">
-              {searchTerm ? "Sonuç Bulunamadı" : "Rehber Henüz Boş"}
+            <h3 className="text-base font-semibold text-zinc-700 mb-1.5">
+              {searchTerm ? "Sonuç Bulunamadı" : "Rehber Boş"}
             </h3>
-            <p className="text-slate-500 max-w-sm mb-8 text-lg">
+            <p className="text-sm text-zinc-500 max-w-xs mb-5">
               {searchTerm 
-                ? `"${searchTerm}" aramasına uygun hiçbir üye veya departman bulamadık. Lütfen harf hatası yapmadığınıza emin olun.` 
-                : "Sistemde henüz kayıtlı hiçbir üye bulunmuyor."}
+                ? `"${searchTerm}" ile eşleşen üye veya departman bulunamadı.` 
+                : "Sistemde henüz kayıtlı üye bulunmuyor."}
             </p>
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm("")}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 font-semibold px-8 py-3 rounded-xl transition-colors shadow-sm"
+                className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
               >
                 Aramayı Temizle
               </button>
             )}
           </div>
-
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {/* Haritası çıkarılan (map edilen) dizi artık "sortedAndFilteredUsers" */}
-            {sortedAndFilteredUsers.map((user) => (
-              <li key={user.id} className="hover:bg-slate-50 transition-colors">
-                <Link href={`/users/${user.id}`} className="p-6 flex items-center justify-between group">
-                  
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xl shadow-inner group-hover:scale-105 transition-transform">
-                      {user.firstName.charAt(0).toUpperCase()}{user.lastName.charAt(0).toUpperCase()}
-                    </div>
-                    
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-800 text-lg capitalize group-hover:text-blue-600 transition-colors">
-                        {user.firstName} {user.lastName}
+          <div className="divide-y divide-zinc-100">
+            {sortedUsers.map((user) => (
+              <Link key={user.id} href={`/users/${user.id}`} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50/80 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-zinc-100 text-zinc-600 rounded-lg flex items-center justify-center text-sm font-semibold group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                    {user.firstName.charAt(0).toUpperCase()}{user.lastName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900 capitalize group-hover:text-indigo-700 transition-colors">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    {user.sectionName ? (
+                      <span className="text-[12px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
+                        <span className="inline-block w-1 h-1 rounded-full bg-indigo-400" />
+                        {user.sectionName}
                       </span>
-                      
-                      {user.sectionName ? (
-                        <span className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
-                          🏢 <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md font-medium border border-slate-200">{user.sectionName}</span>
-                        </span>
-                      ) : (
-                        <span className="text-sm text-slate-400 mt-1 italic flex items-center gap-1.5">
-                          ⚠️ Departmanı Atanmadı
-                        </span>
-                      )}
-                    </div>
+                    ) : (
+                      <span className="text-[12px] text-zinc-400 italic mt-0.5">Departman atanmadı</span>
+                    )}
                   </div>
-
-                  <div className="text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 duration-300">
-                    Profili İncele &rarr;
-                  </div>
-                  
-                </Link>
-              </li>
+                </div>
+                <ArrowUpRight size={16} strokeWidth={1.8} className="text-zinc-300 group-hover:text-indigo-500 transition-colors shrink-0" />
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
