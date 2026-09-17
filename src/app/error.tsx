@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 
 export default function Error({
   error,
@@ -11,40 +12,41 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Geliştirici olarak hatanın detayını konsolda görebilmemiz için
     console.error("Uygulama Hatası Yakalandı:", error);
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      {/* Dikkat Çekici Hata İkonu */}
-      <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner animate-pulse">
-        ⚠️
-      </div>
-      
-      <h2 className="text-3xl font-bold text-slate-800 mb-4">
-        Beklenmedik Bir Sorun Oluştu!
-      </h2>
-      
-      <p className="text-slate-500 max-w-md mb-8 text-lg">
-        Sayfayı yüklerken veya sunucuyla iletişim kurarken teknik bir arızayla karşılaştık. Neyse ki durumu kontrol altına aldık.
-      </p>
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* "reset" fonksiyonu Next.js'in sayfayı patlamadan önceki halinde yeniden yüklemesini sağlar */}
-        <button
-          onClick={() => reset()}
-          className="bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md"
-        >
-          Tekrar Dene
-        </button>
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
+      <div className="bg-white border border-red-200 rounded-2xl p-8 sm:p-12 text-center max-w-lg shadow-sm">
         
-        <Link 
-          href="/" 
-          className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 px-8 rounded-lg transition-colors shadow-sm"
-        >
-          Ana Sayfaya Dön
-        </Link>
+        <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-red-100">
+          <AlertTriangle size={32} strokeWidth={1.8} />
+        </div>
+        
+        <h2 className="text-xl font-bold text-zinc-900 mb-2">
+          Beklenmedik Bir Sistem Hatası
+        </h2>
+        
+        <p className="text-sm text-zinc-500 mb-8 leading-relaxed px-4">
+          Sayfayı yüklerken veya sunucuyla iletişim kurarken teknik bir sorun oluştu. Sistem yöneticisine bilgi verildi.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <button
+            onClick={() => reset()}
+            className="flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white text-[13px] font-semibold py-2.5 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900/40"
+          >
+            <RefreshCcw size={16} strokeWidth={2} /> Yeniden Dene
+          </button>
+          
+          <Link 
+            href="/" 
+            className="flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-[13px] font-semibold py-2.5 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-200"
+          >
+            <Home size={16} strokeWidth={2} className="text-zinc-400" /> Ana Sayfa
+          </Link>
+        </div>
+        
       </div>
     </div>
   );
