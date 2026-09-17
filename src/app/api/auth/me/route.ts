@@ -4,7 +4,6 @@ import { accountService } from "@/services/account.service";
 import { userService } from "@/services/user.service";
 import { errorResponse, successResponse } from "@/lib/api-response";
 
-// 1. Kullanıcının kendi bilgilerini ÇEKMESİ (GET)
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -27,6 +26,7 @@ export async function GET() {
       return errorResponse("Hesap bulunamadı", 404);
     }
     
+    // GET işleminde kod değişmiyor, çünkü arka planda userService zaten JOIN yapıp departman adını da çekecek
     const userProfile = await userService.findByAccountId(account.id);
     
     return successResponse({
@@ -49,10 +49,8 @@ export async function GET() {
   }
 }
 
-// Profil (İsim/Soyisim) GÜNCELLEMESİ (PATCH)
 export async function PATCH(request: Request) {
   try {
-    // Önce adam giriş yapmış mı kontrol edelim
     const cookieStore = await cookies();
     const sessionToken = cookieStore.get("session_token")?.value;
     
@@ -65,15 +63,15 @@ export async function PATCH(request: Request) {
       return errorResponse("Oturum süresi dolmuş, lütfen tekrar giriş yapın.", 401);
     }
     
-    // Ad ve soyad 'user' tablosunda tutuluyor. Önce o tabloyu bulalım.
     const userProfile = await userService.findByAccountId(activeSession.accountId);
     if (!userProfile) {
       return errorResponse("Kullanıcı profili bulunamadı.", 404);
     }
     
-    // Frontend'den gönderilen yeni isimleri (JSON Parser ile) açıyoruz
     const body = await request.json();
-    const { firstName, lastName } = body;
+    
+    // JSON ayrıştırıcıdan (Parser) sectionId'yi de çıkartıyoruz!
+    const { firstName, lastName, sectionId } = body; 
     
     if (!firstName || !lastName) {
       return errorResponse("Ad ve Soyad alanları boş bırakılamaz.", 400);
@@ -83,13 +81,14 @@ export async function PATCH(request: Request) {
       return errorResponse("Ad ve Soyad en az 2 karakter olmalıdır.", 400);
     }
     
-    // Veritabanında ismi güncelliyoruz
+    // Profili güncelliyoruz ve sectionId'yi veritabanına kaydediyoruz
     const updatedProfile = await userService.update(userProfile.id, {
       firstName: firstName.trim(),
-      lastName: lastName.trim()
+      lastName: lastName.trim(),
+      // Eğer kullanıcı departman seçmediyse (Boş ise) veritabanına null gönder.
+      sectionId: sectionId === "" ? null : sectionId, 
     });
     
-    // İşlem başarılı!
     return successResponse({ 
       message: "Profil bilgileriniz başarıyla güncellendi.",
       profile: updatedProfile 
