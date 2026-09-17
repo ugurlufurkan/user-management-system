@@ -5,11 +5,14 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { ToastProvider } from "@/context/toast-context"; 
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Kullanıcı Yönetim Sistemi",
-  description: "Gelişmiş kullanıcı ve oturum yönetim sistemi",
+  title: "SYSTEM — Enterprise Management",
+  description: "Kurumsal kullanıcı ve departman yönetim platformu",
 };
 
 export default function RootLayout({
@@ -19,21 +22,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${inter.className} bg-slate-50 min-h-screen flex flex-col`}>
+      <body className={`${inter.className} bg-zinc-50 min-h-screen flex flex-col antialiased`}>
         
         <ToastProvider>
-          
-          {/* Üst Menü */}
           <Navbar />
           
-          {/* Sitenin Asıl İçeriği (Sayfalar buraya yüklenir) */}
-          <main className="flex-grow container mx-auto p-4 sm:p-8">
+          <main className="flex-grow w-full max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8 py-6">
             {children}
           </main>
           
-          {/* Alt Kısım */}
           <Footer />
-
         </ToastProvider>
 
       </body>
