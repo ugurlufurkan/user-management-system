@@ -1,14 +1,34 @@
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
-      {/* Şık ve modern bir dönen çember (Spinner) animasyonu */}
-      <div className="relative w-16 h-16">
-        <div className="absolute top-0 left-0 w-full h-full border-4 border-slate-200 rounded-full"></div>
-        <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+    <div className="min-h-[70vh] w-full flex flex-col items-center justify-center">
+      
+      {/* Animasyonlu Dönen Çember */}
+      <div className="relative flex items-center justify-center w-24 h-24 mb-8">
+        {/* Arka plan sabit çemberi */}
+        <div className="absolute inset-0 border-4 border-slate-100 rounded-full shadow-inner"></div>
+        
+        {/* Dönen mavi çember */}
+        <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin drop-shadow-md"></div>
+        
+        {/* Ortadaki sabit ikon */}
+        <div className="text-3xl animate-pulse">⏳</div>
       </div>
       
-      <h3 className="mt-5 text-xl font-bold text-slate-700 tracking-tight">Yükleniyor...</h3>
-      <p className="text-sm text-slate-400 mt-1">Lütfen bekleyin, verileriniz hazırlanıyor.</p>
+      <h2 className="text-2xl font-bold text-slate-700 tracking-widest uppercase mb-4">
+        Yükleniyor
+      </h2>
+      
+      {/* Zıplayan 3 Nokta Animasyonu */}
+      <div className="flex items-center gap-2">
+        <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+        <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+        <span className="w-2.5 h-2.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+      </div>
+      
+      <p className="mt-6 text-slate-400 font-medium text-sm animate-pulse">
+        Lütfen bekleyin, veriler hazırlanıyor...
+      </p>
+
     </div>
   );
 }
