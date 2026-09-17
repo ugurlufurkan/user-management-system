@@ -1,57 +1,58 @@
 import Link from "next/link";
+import { HelpCircle, ChevronRight, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: 'Sıkça Sorulan Sorular | Sistem',
-  description: 'Kullanıcı yönetim sistemi hakkında sıkça sorulan sorular ve cevapları.',
+  title: 'Sıkça Sorulan Sorular | System Enterprise',
 };
 
 export default function FAQPage() {
   const faqs = [
     {
       q: "Şifremi nasıl değiştirebilirim?",
-      a: "Ayarlar sayfasına giderek 'Güvenlik' sekmesi altından mevcut şifrenizi ve yeni şifrenizi girerek anında değişiklik yapabilirsiniz."
+      a: "Ayarlar sayfasına giderek 'Güvenlik ve Şifre' bölümünden mevcut şifrenizi ve yeni şifrenizi girerek anında değişiklik yapabilirsiniz."
     },
     {
-      q: "Bağlı olduğum departmanı (Section) değiştirebilir miyim?",
-      a: "Evet, Ayarlar menüsünde yer alan 'Kişisel Bilgiler' kısmından açılır menüyü (dropdown) kullanarak farklı bir departman seçip kaydet butonuna basmanız yeterlidir."
+      q: "Bağlı olduğum departmanı değiştirebilir miyim?",
+      a: "Evet, Ayarlar menüsündeki 'Kişisel Bilgiler' kartı üzerinden farklı bir departman seçip kaydedebilirsiniz."
     },
     {
       q: "Hesabımı silersem verilerime ne olur?",
-      a: "Hesabınızı sildiğinizde (Ayarlar sayfasının en altındaki 'Tehlikeli Bölge'), size ve ailenize ait tüm veriler veritabanından kalıcı olarak ve geri döndürülemez şekilde tamamen silinir."
+      a: "Hesabınızı sildiğinizde (Ayarlar sayfasındaki Tehlikeli Bölge), size ait tüm kayıtlar veritabanımızdan kalıcı ve geri döndürülemez şekilde tamamen silinir."
     },
     {
-      q: "Diğer kullanıcıların bilgilerini düzenleyebilir miyim?",
-      a: "Hayır. Sistemimiz sıkı bir güvenlik yapısına sahiptir. Üye rehberinden başkasının profiline girdiğinizde sistem sadece okuma (isReadOnly) modunda açılır ve düzenleme butonları gizlenir."
+      q: "Diğer kullanıcıların profillerini düzenleyebilir miyim?",
+      a: "Hayır. Sistemimiz sıkı bir yetkilendirme altyapısına sahiptir. Üye rehberinden başkasının profiline girdiğinizde (isReadOnly) sadece okuma modunda görüntüleyebilirsiniz."
     },
     {
-      q: "Kız arkadaş veya aile bilgisi girmek zorunlu mu?",
-      a: "Hayır, bu alanlar tamamen opsiyoneldir. Profilinizi detaylandırmak isterseniz sonradan ekleyebilirsiniz."
+      q: "Kayıt sırasında tüm alanları doldurmak zorunlu mu?",
+      a: "Kız arkadaş veya aile bilgisi gibi modüller tamamen opsiyoneldir. Sadece temel kimlik bilgileriniz zorunludur."
     }
   ];
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 mb-20 px-4">
+    <div className="max-w-3xl mx-auto mt-4 mb-16">
       
-      {/* Sayfa Başlığı */}
+      {/* Header */}
       <div className="text-center mb-12">
-        <span className="text-6xl mb-4 block drop-shadow-sm">💡</span>
-        <h1 className="text-4xl font-extrabold text-slate-800 mb-4 tracking-tight">Sıkça Sorulan Sorular</h1>
-        <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-          Sistem kullanımı hakkında merak ettiğiniz tüm detayları aşağıda bulabilirsiniz.
+        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-5 shadow-sm border border-indigo-100/50">
+          <HelpCircle size={24} strokeWidth={1.8} />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 mb-3 tracking-tight">Sıkça Sorulan Sorular</h1>
+        <p className="text-zinc-500 text-[15px] max-w-lg mx-auto">
+          Sistem kullanımı ve güvenlik politikalarımız hakkında merak ettiğiniz tüm teknik detaylar.
         </p>
       </div>
 
-      {/* Soru & Cevap Listesi */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
-        <div className="divide-y divide-slate-100">
+      {/* Accordion List (Visual) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-zinc-200/80 overflow-hidden mb-10">
+        <div className="divide-y divide-zinc-100">
           {faqs.map((faq, index) => (
-            <div key={index} className="p-8 hover:bg-slate-50 transition-colors group">
-              <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-start gap-4">
-                <span className="text-blue-500 font-black text-2xl group-hover:scale-110 transition-transform">S.</span> 
+            <div key={index} className="p-6 sm:p-8 group hover:bg-zinc-50/50 transition-colors">
+              <h3 className="text-[15px] font-semibold text-zinc-900 mb-3 flex items-start gap-3">
+                <span className="text-indigo-600 shrink-0 mt-0.5"><ChevronRight size={16} strokeWidth={2.5} /></span> 
                 {faq.q}
               </h3>
-              <p className="text-slate-600 leading-relaxed flex items-start gap-4">
-                <span className="text-emerald-500 font-black text-2xl group-hover:scale-110 transition-transform">C.</span> 
+              <p className="text-[14px] text-zinc-500 leading-relaxed pl-7">
                 {faq.a}
               </p>
             </div>
@@ -59,19 +60,18 @@ export default function FAQPage() {
         </div>
       </div>
 
-      {/* Ekstra Yönlendirme Kartı */}
-      <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 p-10 rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
-        
-        <h3 className="text-2xl font-bold text-blue-900 mb-3 relative z-10">Başka bir sorunuz mu var?</h3>
-        <p className="text-blue-700/80 mb-8 max-w-md mx-auto relative z-10">
-          Aradığınız cevabı bulamadıysanız hemen ayarlar sayfanıza giderek sistemi bizzat test edebilirsiniz.
+      {/* Action Card */}
+      <div className="bg-zinc-900 rounded-2xl p-8 sm:p-10 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent pointer-events-none" />
+        <h3 className="text-lg font-bold text-white mb-2 relative z-10">Başka bir sorunuz mu var?</h3>
+        <p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto relative z-10">
+          İşleyişi daha iyi kavramak için hemen ayarlar sayfanıza giderek sistemi test edebilirsiniz.
         </p>
         <Link 
           href="/settings"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-10 rounded-xl transition-all shadow-md inline-block relative z-10"
+          className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-sm relative z-10"
         >
-          Ayarlara Git &rarr;
+          Ayarlara Git <ArrowRight size={16} strokeWidth={2} />
         </Link>
       </div>
 
