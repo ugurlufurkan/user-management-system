@@ -16,14 +16,12 @@ import {
 } from "lucide-react";
 import { useToast } from "@/context/toast-context";
 
-// ─── Type Definitions ────────────────────────────────────────────────
 type NavItem = {
   label: string;
   href: string;
   icon: React.ReactNode;
 };
 
-// ─── Navigation Data ─────────────────────────────────────────────────
 const primaryNav: NavItem[] = [
   { label: "Ana Sayfa",    href: "/",         icon: <LayoutDashboard size={18} strokeWidth={1.8} /> },
   { label: "Üyeler",       href: "/users",    icon: <Users size={18} strokeWidth={1.8} /> },
@@ -36,18 +34,13 @@ const userNav: NavItem[] = [
   { label: "Ayarlar",  href: "/settings", icon: <Settings size={18} strokeWidth={1.8} /> },
 ];
 
-// ─── Route Matching ──────────────────────────────────────────────────
 function isRouteActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-// ─── Hidden Routes (Login / Register) ────────────────────────────────
 const HIDDEN_ROUTES = ["/login", "/register"];
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// NAVBAR COMPONENT
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -59,19 +52,16 @@ export default function Navbar() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
 
-  // ── Scroll Detection ───────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ── Close mobile menu on route change ──────────────────────────────
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // ── Close mobile menu on Escape or outside click ───────────────────
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") setMobileMenuOpen(false);
   }, []);
@@ -102,7 +92,6 @@ export default function Navbar() {
     };
   }, [mobileMenuOpen, handleKeyDown, handleClickOutside]);
 
-  // ── Logout Handler ─────────────────────────────────────────────────
   const handleLogout = async () => {
     const confirmed = confirm("Sistemden çıkış yapmak istediğinize emin misiniz?");
     if (!confirmed) return;
@@ -123,10 +112,8 @@ export default function Navbar() {
     }
   };
 
-  // ── Hide on auth pages ─────────────────────────────────────────────
   if (HIDDEN_ROUTES.includes(pathname)) return null;
 
-  // ── Desktop NavLink ────────────────────────────────────────────────
   const DesktopNavLink = ({ item }: { item: NavItem }) => {
     const active = isRouteActive(pathname, item.href);
     return (
@@ -143,7 +130,7 @@ export default function Navbar() {
         `}
         aria-current={active ? "page" : undefined}
       >
-        <span className={`transition-colors duration-200 ${active ? "text-indigo-600" : "text-zinc-400 group-hover:text-zinc-600"}`}>
+        <span className={`transition-colors duration-200 ${active ? "text-indigo-600" : "text-zinc-400"}`}>
           {item.icon}
         </span>
         <span>{item.label}</span>
@@ -154,7 +141,6 @@ export default function Navbar() {
     );
   };
 
-  // ── Mobile NavLink ─────────────────────────────────────────────────
   const MobileNavLink = ({ item }: { item: NavItem }) => {
     const active = isRouteActive(pathname, item.href);
     return (
@@ -200,10 +186,7 @@ export default function Navbar() {
         <div className="max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-[68px]">
 
-            {/* ─── LEFT: Brand + Primary Nav ──────────────────────── */}
             <div className="flex items-center gap-10">
-
-              {/* Brand */}
               <Link
                 href="/"
                 className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 rounded-lg"
@@ -226,10 +209,8 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              {/* Divider */}
               <div className="hidden lg:block w-px h-7 bg-zinc-200/80" />
 
-              {/* Desktop Primary Navigation */}
               <div className="hidden lg:flex items-center gap-1">
                 {primaryNav.map((item) => (
                   <DesktopNavLink key={item.href} item={item} />
@@ -237,19 +218,12 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* ─── RIGHT: User Area ───────────────────────────────── */}
             <div className="flex items-center gap-1">
-
-              {/* Desktop User Navigation */}
               <div className="hidden lg:flex items-center gap-1">
                 {userNav.map((item) => (
                   <DesktopNavLink key={item.href} item={item} />
                 ))}
-
-                {/* Divider */}
                 <div className="w-px h-7 bg-zinc-200/80 mx-2" />
-
-                {/* Logout */}
                 <button
                   onClick={handleLogout}
                   disabled={isLoggingOut}
@@ -269,7 +243,6 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* ─── Mobile Hamburger ─────────────────────────────── */}
               <button
                 ref={hamburgerRef}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -282,12 +255,12 @@ export default function Navbar() {
                   <Menu
                     size={20}
                     strokeWidth={1.8}
-                    className={`absolute inset-0 transition-all duration-250 ${mobileMenuOpen ? "opacity-0 rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"}`}
+                    className={`absolute inset-0 transition-all duration-200 ${mobileMenuOpen ? "opacity-0 rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"}`}
                   />
                   <X
                     size={20}
                     strokeWidth={1.8}
-                    className={`absolute inset-0 transition-all duration-250 ${mobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-75"}`}
+                    className={`absolute inset-0 transition-all duration-200 ${mobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-75"}`}
                   />
                 </div>
               </button>
@@ -296,18 +269,15 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ─── Mobile Overlay ─────────────────────────────────────────── */}
       <div
         className={`
-          fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]
-          transition-opacity duration-300
-          lg:hidden
+          fixed inset-0 z-40 bg-black/15 backdrop-blur-[2px]
+          transition-opacity duration-300 lg:hidden
           ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
         `}
         aria-hidden="true"
       />
 
-      {/* ─── Mobile Menu Panel ──────────────────────────────────────── */}
       <div
         ref={mobileMenuRef}
         id="mobile-menu"
@@ -325,12 +295,8 @@ export default function Navbar() {
         `}
       >
         <div className="p-5 space-y-6 max-h-[calc(100vh-68px)] overflow-y-auto">
-
-          {/* Mobile Primary Nav */}
           <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3 px-1">
-              Platform
-            </p>
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3 px-1">Platform</p>
             <div className="space-y-1">
               {primaryNav.map((item) => (
                 <MobileNavLink key={item.href} item={item} />
@@ -338,14 +304,10 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="h-px bg-zinc-100" />
 
-          {/* Mobile User Nav */}
           <div>
-            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3 px-1">
-              Hesap
-            </p>
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3 px-1">Hesap</p>
             <div className="space-y-1">
               {userNav.map((item) => (
                 <MobileNavLink key={item.href} item={item} />
@@ -353,10 +315,8 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="h-px bg-zinc-100" />
 
-          {/* Mobile Logout */}
           <button
             onClick={() => {
               setMobileMenuOpen(false);
