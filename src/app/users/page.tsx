@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/context/toast-context";
 
-// Tip tanımına sectionName'i ekledik
 type UserProfile = {
   id: string;
   firstName: string;
@@ -39,7 +38,6 @@ export default function UsersPage() {
     fetchUsers();
   }, [showToast]);
 
-  // GELİŞMİŞ ARAMA: Artık isme göre değil, kullanıcının "Departmanına" göre de arama yapılabilir
   const filteredUsers = users.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
     const deptName = (user.sectionName || "Atanmadı").toLowerCase();
@@ -56,7 +54,6 @@ export default function UsersPage() {
           <p className="text-slate-500">Sistemdeki tüm kayıtlı kullanıcıları ve departmanlarını inceleyin.</p>
         </div>
 
-        {/* GELİŞTİRİLMİŞ ARAMA KUTUSU */}
         <div className="w-full md:w-72 relative">
           <input
             type="text"
@@ -73,9 +70,30 @@ export default function UsersPage() {
         {loading ? (
           <div className="p-10 text-center text-slate-500 animate-pulse text-lg">Kullanıcılar yükleniyor...</div>
         ) : filteredUsers.length === 0 ? (
-          <div className="p-10 text-center text-slate-500">
-            {searchTerm ? "Aradığınız kritere (isim veya departmana) uygun üye bulunamadı." : "Sistemde henüz kayıtlı üye yok."}
+          
+          /* BOŞ DURUM (EMPTY STATE) TASARIMI */
+          <div className="p-16 flex flex-col items-center justify-center text-center">
+            <div className="text-7xl mb-6 opacity-80 filter drop-shadow-sm">
+              {searchTerm ? "🕵️‍♂️" : "📭"}
+            </div>
+            <h3 className="text-2xl font-bold text-slate-700 mb-3">
+              {searchTerm ? "Sonuç Bulunamadı" : "Rehber Henüz Boş"}
+            </h3>
+            <p className="text-slate-500 max-w-sm mb-8 text-lg">
+              {searchTerm 
+                ? `"${searchTerm}" aramasına uygun hiçbir üye veya departman bulamadık. Lütfen harf hatası yapmadığınıza emin olun.` 
+                : "Sistemde henüz kayıtlı hiçbir üye bulunmuyor."}
+            </p>
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm("")}
+                className="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 font-semibold px-8 py-3 rounded-xl transition-colors shadow-sm"
+              >
+                Aramayı Temizle
+              </button>
+            )}
           </div>
+
         ) : (
           <ul className="divide-y divide-slate-100">
             {filteredUsers.map((user) => (
@@ -92,7 +110,6 @@ export default function UsersPage() {
                         {user.firstName} {user.lastName}
                       </span>
                       
-                      {/* DEPARTMAN ROZETİMİZ */}
                       {user.sectionName ? (
                         <span className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
                           🏢 <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md font-medium border border-slate-200">{user.sectionName}</span>
@@ -105,7 +122,6 @@ export default function UsersPage() {
                     </div>
                   </div>
 
-                  {/* Profil İncele Butonu (Fare üzerine gelince sağdan kayarak çıkar) */}
                   <div className="text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 duration-300">
                     Profili İncele &rarr;
                   </div>
