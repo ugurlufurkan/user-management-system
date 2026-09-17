@@ -10,12 +10,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   
   const [email, setEmail] = useState("");
-  // Ad ve Soyad state'leri eklendi
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   
   const [isSavingPassword, setIsSavingPassword] = useState(false);
-  const [isSavingProfile, setIsSavingProfile] = useState(false); // Profil kaydetme butonu için
+  const [isSavingProfile, setIsSavingProfile] = useState(false); 
   const [isDeleting, setIsDeleting] = useState(false); 
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -24,7 +23,6 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // Mevcut kullanıcı bilgilerini (API'mizden) çekiyoruz
         const res = await fetch("/api/auth/me");
         if (!res.ok) {
           router.push("/login");
@@ -33,7 +31,6 @@ export default function SettingsPage() {
         const data = await res.json();
         setEmail(data.account.email);
         
-        // Eğer adamın profil (isim) bilgileri varsa, input kutularına otomatik dolduruyoruz
         if (data.profile) {
           setFirstName(data.profile.firstName || "");
           setLastName(data.profile.lastName || "");
@@ -48,13 +45,32 @@ export default function SettingsPage() {
     fetchUser();
   }, [router]);
 
-  // Profil Bilgileri Formunu Yakalama
+  // Profil (İsim) Güncelleme Formunun API'ye Gönderilmesi
   const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSavingProfile(true);
-    // API'sini bir sonraki adımda (120. Commit) yazacağız, şimdilik uyarı versin:
-    showToast("İsim güncelleme arka planı (API) henüz bağlanmadı!", "error");
-    setIsSavingProfile(false);
+    
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast("Profil bilgileriniz başarıyla güncellendi! ✅", "success");
+        // Navbar'da vs ismin değişme ihtimaline karşı sayfayı tazeliyoruz
+        router.refresh(); 
+      } else {
+        showToast(data.error || "Profil güncellenemedi.", "error");
+      }
+    } catch (error) {
+      showToast("Sunucuyla iletişim kurulamadı.", "error");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -128,7 +144,7 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Hesap Ayarları ⚙️</h1>
       <p className="text-slate-500 mb-10">Kişisel bilgilerinizi ve güvenlik tercihlerinizi buradan yönetebilirsiniz.</p>
 
-      {/* 1. PROFİL BİLGİLERİ */}
+      {/* PROFİL BİLGİLERİ */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
         <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Kişisel Bilgiler</h2>
         
@@ -167,7 +183,7 @@ export default function SettingsPage() {
         </form>
       </div>
 
-      {/* 2. BÖLÜM: GÜVENLİK (ŞİFRE VE MAİL) */}
+      {/* GÜVENLİK */}
       <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-8">
         <h2 className="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Güvenlik</h2>
         
@@ -236,7 +252,7 @@ export default function SettingsPage() {
         </form>
       </div>
 
-      {/* 3. BÖLÜM: TEHLİKELİ BÖLGE (HESAP SİLME) */}
+      {/* TEHLİKELİ BÖLGE */}
       <div className="bg-red-50 p-8 rounded-xl border border-red-200 relative overflow-hidden">
         <div className="absolute -right-4 -bottom-4 text-red-100 text-9xl pointer-events-none">⚠️</div>
         <h2 className="text-xl font-bold text-red-700 mb-2 relative z-10">Tehlikeli Bölge</h2>
