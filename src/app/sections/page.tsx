@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/context/toast-context"; // Bildirim sistemini içeri aldık
+import { useToast } from "@/context/toast-context";
+import { Building2, Plus, Trash2, Layers } from "lucide-react";
 
 type Section = {
   id: string;
@@ -24,8 +25,8 @@ export default function SectionsPage() {
       const res = await fetch("/api/sections");
       const data = await res.json();
       setSections(data.data || data || []);
-    } catch (error) {
-      console.error("Bölümler alınamadı:", error);
+    } catch {
+      showToast("Departmanlar alınamadı", "error");
     } finally {
       setLoading(false);
     }
@@ -46,13 +47,13 @@ export default function SectionsPage() {
       const data = await res.json();
 
       if (res.ok) {
-        showToast("Bölüm başarıyla eklendi! 🏢", "success");
+        showToast("Departman başarıyla eklendi!", "success");
         setName("");
-        fetchSections(); // Listeyi yenile
+        fetchSections(); 
       } else {
-        showToast(data.error || "Bölüm eklenemedi.", "error");
+        showToast(data.error || "Departman eklenemedi.", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Sunucu hatası oluştu.", "error");
     } finally {
       setIsAdding(false);
@@ -64,80 +65,90 @@ export default function SectionsPage() {
     if (!onay) return;
 
     try {
-      const res = await fetch(`/api/sections/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/sections/${id}`, { method: "DELETE" });
 
       if (res.ok) {
-        showToast("Departman sistemden silindi. 🗑️", "success");
-        // Sayfayı yenilemeden veriyi ekrandan siliyoruz (Çok daha hızlı hissettirir)
+        showToast("Departman sistemden silindi.", "success");
         setSections(sections.filter(s => s.id !== id)); 
       } else {
         const data = await res.json();
         showToast(data.error || "Silme işlemi başarısız.", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Sunucu ile iletişim kurulamadı.", "error");
     }
   };
 
-  if (loading) {
-    return <div className="text-center mt-20 text-slate-500 animate-pulse text-lg">Departmanlar yükleniyor...</div>;
-  }
-
   return (
-    <div className="max-w-4xl mx-auto mt-10 mb-20">
-      <h1 className="text-3xl font-bold text-slate-800 mb-2">Departman Yönetimi 🏢</h1>
-      <p className="text-slate-500 mb-10">Şirket içindeki tüm bölümleri (sections) buradan ekleyip silebilirsiniz.</p>
+    <div className="max-w-4xl mx-auto mt-4 mb-12">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Departman Yönetimi</h1>
+        <p className="text-[13px] text-zinc-500 mt-0.5">Şirket içindeki tüm bölümleri buradan ekleyip silebilirsiniz</p>
+      </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">Yeni Departman Ekle</h2>
-        <form onSubmit={handleAddSection} className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Örn: İnsan Kaynakları"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="flex-grow border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
-          />
+      {/* Add Section */}
+      <div className="bg-white border border-zinc-200/80 rounded-xl p-5 sm:p-6 shadow-sm mb-8">
+        <h2 className="text-sm font-semibold text-zinc-800 mb-3">Yeni Departman Ekle</h2>
+        <form onSubmit={handleAddSection} className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-grow">
+            <Building2 size={16} strokeWidth={1.8} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Örn: İnsan Kaynakları"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400
+                focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
+            />
+          </div>
           <button
             type="submit"
             disabled={isAdding}
-            className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 px-6 rounded-lg
+              transition-all duration-200 disabled:bg-indigo-400 disabled:cursor-not-allowed shrink-0"
           >
-            {isAdding ? "Ekleniyor..." : "Ekle"}
+            {isAdding ? "Ekleniyor..." : <><Plus size={16} strokeWidth={2} /> Ekle</>}
           </button>
         </form>
       </div>
 
-      {/* BÖLÜMLER LİSTESİ */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <h2 className="text-lg font-bold text-slate-800 p-6 border-b border-slate-100">Kayıtlı Departmanlar</h2>
+      {/* List */}
+      <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-zinc-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-zinc-900">Kayıtlı Departmanlar</h2>
+          <span className="text-xs font-medium bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">{sections.length} Adet</span>
+        </div>
         
-        {sections.length === 0 ? (
-          <div className="p-10 text-center text-slate-500">Henüz hiç departman eklenmemiş.</div>
+        {loading ? (
+          <div className="p-12 text-center text-sm text-zinc-400">Departmanlar yükleniyor...</div>
+        ) : sections.length === 0 ? (
+          <div className="p-16 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-4">
+              <Layers size={22} strokeWidth={1.5} className="text-zinc-400" />
+            </div>
+            <p className="text-sm font-medium text-zinc-500">Henüz hiçbir departman eklenmemiş.</p>
+          </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-zinc-100">
             {sections.map((section) => (
-              // group class'ı ile üzerine gelindiğinde sil butonunun görünmesini sağlayacağız
-              <li key={section.id} className="p-6 flex justify-between items-center hover:bg-slate-50 transition-colors group">
-                
+              <li key={section.id} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50/80 transition-colors group">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
+                  <div className="w-9 h-9 bg-zinc-100 text-zinc-600 rounded-lg flex items-center justify-center text-sm font-semibold">
                     {section.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-semibold text-slate-700 text-lg">{section.name}</span>
+                  <span className="font-medium text-zinc-700 text-sm">{section.name}</span>
                 </div>
                 
-                {/* SİLME BUTONU (Sadece farenin üzerine gelindiğinde yavaşça belirir) */}
                 <button
                   onClick={() => handleDelete(section.id, section.name)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium text-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  className="flex items-center gap-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Departmanı Sil"
                 >
-                  Sil
+                  <Trash2 size={14} strokeWidth={2} /> Sil
                 </button>
-                
               </li>
             ))}
           </ul>
