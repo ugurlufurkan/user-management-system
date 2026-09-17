@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/context/toast-context";
+import { Users, Edit2, Plus, Save, X } from "lucide-react";
 
 type FamilyInfo = { id: string; fatherName: string; motherName: string; siblingCount: number; };
 
@@ -13,7 +14,9 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
 
   useEffect(() => {
     if (userId) {
-      fetch(`/api/users/${userId}/family`).then(res => res.ok ? res.json() : null).then(data => { if(data) setFamilyInfo(data); setLoading(false); });
+      fetch(`/api/users/${userId}/family`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if(data) setFamilyInfo(data); setLoading(false); });
     }
   }, [userId]);
 
@@ -21,43 +24,104 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
     e.preventDefault();
     if (isReadOnly) return;
     const formData = new FormData(e.currentTarget);
-    const payload = { fatherName: formData.get("fatherName"), motherName: formData.get("motherName"), siblingCount: parseInt(formData.get("siblingCount") as string) || 0 };
+    const payload = { 
+      fatherName: formData.get("fatherName"), 
+      motherName: formData.get("motherName"), 
+      siblingCount: parseInt(formData.get("siblingCount") as string) || 0 
+    };
 
     const method = familyInfo ? "PATCH" : "POST";
-    const res = await fetch(`/api/users/${userId}/family`, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    if (res.ok) { setIsEditing(false); setFamilyInfo({...familyInfo, ...payload} as FamilyInfo); showToast("Aile bilgileri kaydedildi!", "success"); } 
-    else showToast("Kayıt işlemi başarısız.", "error");
+    const res = await fetch(`/api/users/${userId}/family`, { 
+      method, 
+      headers: { "Content-Type": "application/json" }, 
+      body: JSON.stringify(payload) 
+    });
+    
+    if (res.ok) { 
+      setIsEditing(false); 
+      setFamilyInfo({...familyInfo, ...payload} as FamilyInfo); 
+      showToast("Aile bilgileri kaydedildi!", "success"); 
+    } else {
+      showToast("Kayıt işlemi başarısız.", "error");
+    }
   };
 
-  if (loading) return <div className="p-6 bg-white rounded-xl shadow-sm border animate-pulse">Yükleniyor...</div>;
+  if (loading) return (
+    <div className="bg-white border border-zinc-200/80 rounded-xl p-6 shadow-sm">
+      <div className="animate-pulse space-y-4">
+        <div className="h-4 bg-zinc-200 rounded w-1/3"></div>
+        <div className="h-16 bg-zinc-100 rounded-lg w-full"></div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-slate-800">👨‍👩‍👧‍👦 Aile Bilgileri</h2>
+    <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden shadow-sm">
+      <div className="px-6 py-5 border-b border-zinc-100 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <Users size={18} strokeWidth={1.8} className="text-indigo-600" />
+          <h2 className="text-sm font-semibold text-zinc-900">Aile Bilgileri</h2>
+        </div>
         {!isReadOnly && !isEditing && (
-          <button onClick={() => setIsEditing(true)} className="text-sm bg-slate-100 hover:bg-slate-200 px-4 py-1.5 rounded-lg">{familyInfo ? "Düzenle" : "Ekle"}</button>
+          <button 
+            onClick={() => setIsEditing(true)} 
+            className="flex items-center gap-1.5 text-xs font-semibold bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            {familyInfo ? <><Edit2 size={14} strokeWidth={2}/> Düzenle</> : <><Plus size={14} strokeWidth={2}/> Ekle</>}
+          </button>
         )}
       </div>
-      {isEditing && !isReadOnly ? (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input name="fatherName" placeholder="Baba Adı" defaultValue={familyInfo?.fatherName} required className="w-full border p-2.5 rounded-lg" />
-          <input name="motherName" placeholder="Anne Adı" defaultValue={familyInfo?.motherName} required className="w-full border p-2.5 rounded-lg" />
-          <input type="number" name="siblingCount" placeholder="Kardeş Sayısı" defaultValue={familyInfo?.siblingCount} required min="0" className="w-full border p-2.5 rounded-lg" />
-          <div className="flex gap-3 mt-2">
-            <button type="submit" className="bg-blue-600 text-white px-5 py-2.5 rounded-lg">Kaydet</button>
-            <button type="button" onClick={() => setIsEditing(false)} className="bg-white border text-slate-700 px-5 py-2.5 rounded-lg">İptal</button>
+
+      <div className="p-6">
+        {isEditing && !isReadOnly ? (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-[12px] font-medium text-zinc-700 mb-1">Baba Adı</label>
+              <input name="fatherName" placeholder="Baba Adı" defaultValue={familyInfo?.fatherName} required 
+                className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white" />
+            </div>
+            <div>
+              <label className="block text-[12px] font-medium text-zinc-700 mb-1">Anne Adı</label>
+              <input name="motherName" placeholder="Anne Adı" defaultValue={familyInfo?.motherName} required 
+                className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white" />
+            </div>
+            <div>
+              <label className="block text-[12px] font-medium text-zinc-700 mb-1">Kardeş Sayısı</label>
+              <input type="number" name="siblingCount" placeholder="Kardeş Sayısı" defaultValue={familyInfo?.siblingCount} required min="0" 
+                className="w-full px-3.5 py-2 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white" />
+            </div>
+            <div className="flex gap-2 mt-2 justify-end">
+              <button type="button" onClick={() => setIsEditing(false)} className="flex items-center gap-1.5 bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors">
+                <X size={14} strokeWidth={2} /> İptal
+              </button>
+              <button type="submit" className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors">
+                <Save size={14} strokeWidth={2} /> Kaydet
+              </button>
+            </div>
+          </form>
+        ) : familyInfo ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-zinc-50 border border-zinc-100 p-5 rounded-lg">
+            <div>
+              <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block mb-1">Baba Adı</span>
+              <span className="text-[14px] text-zinc-900 font-semibold capitalize">{familyInfo.fatherName}</span>
+            </div>
+            <div>
+              <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block mb-1">Anne Adı</span>
+              <span className="text-[14px] text-zinc-900 font-semibold capitalize">{familyInfo.motherName}</span>
+            </div>
+            <div>
+              <span className="text-[11px] text-zinc-400 font-bold uppercase tracking-wider block mb-1">Kardeş Sayısı</span>
+              <span className="text-[14px] text-zinc-900 font-semibold">{familyInfo.siblingCount}</span>
+            </div>
           </div>
-        </form>
-      ) : familyInfo ? (
-        <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
-          <div><span className="text-xs text-slate-500 font-bold block">BABA ADI</span><span className="capitalize font-medium">{familyInfo.fatherName}</span></div>
-          <div><span className="text-xs text-slate-500 font-bold block">ANNE ADI</span><span className="capitalize font-medium">{familyInfo.motherName}</span></div>
-          <div><span className="text-xs text-slate-500 font-bold block">KARDEŞ</span><span className="font-medium">{familyInfo.siblingCount}</span></div>
-        </div>
-      ) : (
-        <div className="text-center p-6 bg-slate-50 rounded-lg"><p className="text-slate-500">{isReadOnly ? "Kullanıcı bilgi girmemiş." : "Aile bilgisi eklemediniz."}</p></div>
-      )}
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-[13px] text-zinc-500">
+              {isReadOnly ? "Bu kullanıcı henüz aile bilgisini eklememiş." : "Sisteme henüz aile bilginizi eklemediniz."}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -88,12 +88,12 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 bg-white rounded-xl p-1 flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 bg-white rounded-xl p-1 flex items-center justify-center shadow-lg shrink-0">
               <Image src="/logo.png" alt="Aksiyonsoft Logo" width={44} height={44} className="object-contain" />
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15]">
-                User Management
+                User Management<br className="hidden sm:block" /> System
               </h1>
             </div>
           </div>
