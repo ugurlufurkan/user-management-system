@@ -2,107 +2,120 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/context/toast-context";
 
+// Tip tanımına sectionName'i ekledik
 type UserProfile = {
   id: string;
-  accountId: string;
   firstName: string;
   lastName: string;
-  createdAt: string;
+  sectionName: string | null; 
 };
 
 export default function UsersPage() {
+  const { showToast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // API'den tüm kullanıcıları çeken fonksiyon
     const fetchUsers = async () => {
       try {
         const res = await fetch("/api/users");
+        const data = await res.json();
+
         if (res.ok) {
-          const data = await res.json();
-          setUsers(data || []);
+          setUsers(data.data || data || []);
+        } else {
+          showToast("Kullanıcılar alınamadı", "error");
         }
       } catch (error) {
-        console.error("Kullanıcılar alınamadı", error);
+        showToast("Sunucuya bağlanılamadı", "error");
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [showToast]);
 
-  // Anlık arama (Live Search) filtresi
-  const filteredUsers = users.filter(user => 
-    `${user.firstName} ${user.lastName}`.toLowerCase().includes(search.toLowerCase())
-  );
+  // GELİŞMİŞ ARAMA: Artık isme göre değil, kullanıcının "Departmanına" göre de arama yapılabilir
+  const filteredUsers = users.filter((user) => {
+    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+    const deptName = (user.sectionName || "Atanmadı").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    
+    return fullName.includes(search) || deptName.includes(search);
+  });
 
   return (
     <div className="max-w-5xl mx-auto mt-10 mb-20">
-      
-      {/* Sayfa Başlığı ve Arama Çubuğu */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Sistem Üyeleri</h1>
-          <p className="text-slate-500 mt-1">Platforma kayıtlı tüm kullanıcıları keşfedin</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Üye Rehberi 👥</h1>
+          <p className="text-slate-500">Sistemdeki tüm kayıtlı kullanıcıları ve departmanlarını inceleyin.</p>
         </div>
-        
-        <div className="w-full sm:w-72">
-          <input 
-            type="text" 
-            placeholder="İsim veya soyisim ara..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
+
+        {/* GELİŞTİRİLMİŞ ARAMA KUTUSU */}
+        <div className="w-full md:w-72 relative">
+          <input
+            type="text"
+            placeholder="İsim veya Departman ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
           />
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
         </div>
       </div>
 
-      {loading ? (
-        // Yüklenirken gösterilecek şık "İskelet (Skeleton)" yapısı
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 h-36 animate-pulse flex flex-col justify-center">
-              <div className="w-12 h-12 bg-slate-200 rounded-full mb-4"></div>
-              <div className="h-4 bg-slate-200 rounded w-3/4 mb-3"></div>
-              <div className="h-3 bg-slate-100 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      ) : filteredUsers.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300 text-slate-500">
-          Aradığınız kriterlere uygun kullanıcı bulunamadı.
-        </div>
-      ) : (
-        // Kullanıcı Kartları Listesi
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map(user => (
-            <div key={user.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-200 transition-all group flex flex-col">
-              
-              {/* İsim baş harflerinden Avatar oluşturma */}
-              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg mb-4">
-                {user.firstName.charAt(0).toUpperCase()}{user.lastName.charAt(0).toUpperCase()}
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-800 capitalize">
-                {user.firstName} {user.lastName}
-              </h3>
-              
-              <div className="text-sm text-slate-400 mt-auto pt-6 flex justify-between items-center">
-                <span>Katılım: {new Date(user.createdAt).toLocaleDateString('tr-TR')}</span>
-                
-                {/* Gelecekte tıklayıp o kişinin detayını görebileceğimiz altyapı */}
-                <Link href={`/users/${user.id}`} className="text-blue-600 hover:text-blue-800 font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                  Detayları Gör &rarr;
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {loading ? (
+          <div className="p-10 text-center text-slate-500 animate-pulse text-lg">Kullanıcılar yükleniyor...</div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-10 text-center text-slate-500">
+            {searchTerm ? "Aradığınız kritere (isim veya departmana) uygun üye bulunamadı." : "Sistemde henüz kayıtlı üye yok."}
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {filteredUsers.map((user) => (
+              <li key={user.id} className="hover:bg-slate-50 transition-colors">
+                <Link href={`/users/${user.id}`} className="p-6 flex items-center justify-between group">
+                  
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-xl shadow-inner group-hover:scale-105 transition-transform">
+                      {user.firstName.charAt(0).toUpperCase()}{user.lastName.charAt(0).toUpperCase()}
+                    </div>
+                    
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-800 text-lg capitalize group-hover:text-blue-600 transition-colors">
+                        {user.firstName} {user.lastName}
+                      </span>
+                      
+                      {/* DEPARTMAN ROZETİMİZ */}
+                      {user.sectionName ? (
+                        <span className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
+                          🏢 <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-md font-medium border border-slate-200">{user.sectionName}</span>
+                        </span>
+                      ) : (
+                        <span className="text-sm text-slate-400 mt-1 italic flex items-center gap-1.5">
+                          ⚠️ Departmanı Atanmadı
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Profil İncele Butonu (Fare üzerine gelince sağdan kayarak çıkar) */}
+                  <div className="text-blue-500 font-medium opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 duration-300">
+                    Profili İncele &rarr;
+                  </div>
+                  
                 </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
