@@ -27,12 +27,18 @@ export const user = pgTable("user", {
   accountId: uuid("account_id")
     .notNull()
     .references(() => account.id, { onDelete: "cascade" }),
+  
+  // Kullanıcının bağlı olduğu departman (section)
+  // "onDelete: set null" => Eğer departman silinirse adam silinmesin, sadece departmanı "Boş" görünsün.
+  sectionId: uuid("section_id").references(() => section.id, { onDelete: "set null" }),
+  
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
+
 export const userFamilyInformation = pgTable("user_family_information", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -44,6 +50,7 @@ export const userFamilyInformation = pgTable("user_family_information", {
     .defaultNow()
     .notNull(),
 });
+
 export const userGirlfriendInformation = pgTable("user_girlfriend_information", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -55,6 +62,7 @@ export const userGirlfriendInformation = pgTable("user_girlfriend_information", 
     .defaultNow()
     .notNull(),
 });
+
 export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_information", {
   id: uuid("id").defaultRandom().primaryKey(),
   girlfriendId: uuid("girlfriend_id")
@@ -66,6 +74,7 @@ export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_i
     .defaultNow()
     .notNull(),
 });
+
 export const session = pgTable("session", {
   id: uuid("id").defaultRandom().primaryKey(),
   accountId: uuid("account_id")
