@@ -46,7 +46,7 @@ export class AccountService {
     id: string,
     data: {
       email?: string;
-      passwordHash?: string;
+      passwordHash?: string; role?: string;
     }
   ) {
     const [updatedAccount] = await db
