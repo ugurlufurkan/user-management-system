@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Shield, ShieldAlert, User as UserIcon, Search, Trash2 } from "lucide-react";
+import { Shield, ShieldAlert, User as UserIcon, Search, Trash2, Download } from "lucide-react";
 import { useToast } from "@/context/toast-context";
 
-// firstName ve lastName için "null" olma ihtimalini ekledik
 type UserRow = {
   id: string;
   email: string;
   role: string;
-  firstName: string | null; 
+  firstName: string | null;
   lastName: string | null;
   createdAt: Date;
   sectionName: string | null;
@@ -49,11 +48,48 @@ export default function UsersDataTable({ initialUsers }: { initialUsers: UserRow
     }
   };
 
+  // --- EXCEL / CSV ÇIKTISI ALMA SİSTEMİ ---
+  const handleExportCSV = () => {
+    if (filteredUsers.length === 0) {
+      showToast("İndirilecek veri bulunamadı.", "error");
+      return;
+    }
+
+    const headers = ["ID", "Isim", "Soyisim", "E-Posta", "Departman", "Yetki", "Kayit Tarihi"];
+    const rows = filteredUsers.map(u => [
+      u.id,
+      u.firstName || "İsimsiz",
+      u.lastName || "",
+      u.email,
+      u.sectionName || "Atanmadı",
+      u.role,
+      new Date(u.createdAt).toLocaleDateString("tr-TR")
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    // Excel'in Türkçe karakterleri düzgün okuması için \uFEFF (UTF-8 BOM) ekliyoruz
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `aksiyonsoft_kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("Kullanıcı raporu başarıyla indirildi.", "success");
+  };
+
   return (
     <div className="bg-white border border-zinc-200/80 rounded-xl shadow-sm overflow-hidden flex flex-col">
       
-      <div className="p-5 border-b border-zinc-100 flex items-center justify-between gap-4 bg-zinc-50/30">
-        <div className="relative w-full max-w-md">
+      {/* Arama Çubuğu ve Rapor Butonu */}
+      <div className="p-5 border-b border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-50/30">
+        <div className="relative w-full sm:max-w-md">
           <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
@@ -63,8 +99,17 @@ export default function UsersDataTable({ initialUsers }: { initialUsers: UserRow
             className="w-full pl-10 pr-4 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all placeholder:text-zinc-400"
           />
         </div>
-        <div className="text-[13px] font-semibold text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-sm">
-          {filteredUsers.length} Kullanıcı Bulundu
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="text-[13px] font-semibold text-zinc-500 bg-white border border-zinc-200 px-3 py-2 rounded-lg shadow-sm whitespace-nowrap hidden sm:block">
+            {filteredUsers.length} Kullanıcı
+          </div>
+          <button
+            onClick={handleExportCSV}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+          >
+            <Download size={16} />
+            Rapor İndir
+          </button>
         </div>
       </div>
 
