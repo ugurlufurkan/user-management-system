@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏢 Aksiyonsoft - User Management System (UMS)
 
-## Getting Started
+**Aksiyonsoft User Management System**, şirket içi çalışanların, departmanların, güvenlik oturumlarının ve kişisel profillerin merkezi olarak yönetildiği **Next.js** tabanlı, kurumsal (Enterprise) düzeyde bir web uygulamasıdır.
 
-First, run the development server:
+![Aksiyonsoft Enterprise UI](public/logo.png)
 
+## ✨ Öne Çıkan Özellikler
+
+- **🔒 Gelişmiş Kimlik Doğrulama:** Özel oturum yönetimi, HTTP-Only Cookie tabanlı token sistemi ve şifre güvenliği (`crypto.scryptSync` hashing).
+- **🛡️ Oturum ve Cihaz Kontrolü:** Kullanıcıların açık olan cihaz/tarayıcı oturumlarını (Session) görüntülemesi ve uzaktan sonlandırabilmesi (Revoke).
+- **🏢 Departman (Section) Yönetimi:** Şirket içi departmanların oluşturulması ve kullanıcılara atanması (İlişkisel Veritabanı Mimarisi - Left Join).
+- **🧑‍💻 Kapsamlı Profil Sistemi:** Kullanıcılara ait temel bilgilerin yanı sıra aile, eş/kız arkadaş ve genişletilmiş detay kartları (CRUD işlemleri tam destekli).
+- **🎨 Premium UI/UX Tasarım:** Tailwind CSS ve Lucide-React ile geliştirilmiş modern, "Zinc/Indigo" renk paletine sahip profesyonel arayüz. Eşzamanlı Form state yönetimi ve animasyonlu bildirim (Toast) sistemi.
+- **🚦 Güvenlik Middleware'i:** Rota (Route) bazlı yetkilendirme. Giriş yapmamış kullanıcıların korumalı sayfalara ve API endpoint'lerine erişimi Next.js Middleware seviyesinde kesilir.
+
+## 🛠️ Teknoloji Yığını (Tech Stack)
+
+| Kategori | Teknoloji |
+| :--- | :--- |
+| **Framework** | Next.js 14+ (App Router) |
+| **Dil** | TypeScript |
+| **Veritabanı** | PostgreSQL (Docker üzerinden) |
+| **ORM** | Drizzle ORM |
+| **Stil / UI** | Tailwind CSS, Lucide React |
+| **Şifreleme** | Node.js Crypto Modülü |
+
+## 🚀 Başlangıç ve Kurulum
+
+Projeyi yerel ortamınızda (local) çalıştırmak için aşağıdaki adımları izleyin.
+
+### 1. Önkoşullar
+- **Node.js** (v18 veya üzeri)
+- **Docker Desktop** (PostgreSQL veritabanını ayağa kaldırmak için)
+
+### 2. Projeyi Klonlayın
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/ugurlufurkan/user-management-system.git
+cd user-management-system
