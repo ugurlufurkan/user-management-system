@@ -19,10 +19,9 @@ export default async function AdminSectionsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">Departman Yönetimi</h1>
-        <p className="text-sm text-zinc-500 mt-1">Sistemdeki departmanları yönetin, yenilerini oluşturun veya mevcutları kaldırın.</p>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white transition-colors">Departman Yönetimi</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">Sistemdeki departmanları yönetin, yenilerini oluşturun veya mevcutları kaldırın.</p>
       </div>
-
       <SectionsDataTable initialSections={allSections} />
     </div>
   );
