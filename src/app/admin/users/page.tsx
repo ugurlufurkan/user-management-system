@@ -19,13 +19,15 @@ export default async function AdminUsersPage() {
     .leftJoin(section, eq(user.sectionId, section.id))
     .orderBy(desc(account.createdAt));
 
+  const allSections = await db.select({ id: section.id, name: section.name }).from(section);
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white transition-colors">Kullanıcı Yönetimi</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">Sistemdeki tüm üyeleri arayın, inceleyin ve gerekirse sistemden uzaklaştırın.</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">Sistemdeki tüm üyeleri arayın, detaylı inceleyin veya toplu işlemler gerçekleştirin.</p>
       </div>
-      <UsersDataTable initialUsers={allUsers} />
+      <UsersDataTable initialUsers={allUsers} sections={allSections} />
     </div>
   );
 }

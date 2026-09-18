@@ -57,23 +57,24 @@ export async function POST(
     const body = await request.json();
 
     if (!body.fatherName || typeof body.fatherName !== "string" || body.fatherName.trim().length < 2) {
-       return errorResponse("fatherName must be at least 2 characters", 400);
+      return errorResponse("Baba adı en az 2 karakter olmalıdır!", 400);
     }
     
     if (!body.motherName || typeof body.motherName !== "string" || body.motherName.trim().length < 2) {
-       return errorResponse("motherName must be at least 2 characters", 400);
+      return errorResponse("Anne adı en az 2 karakter olmalıdır!", 400);
     }
 
     const newFamilyInfo = await userFamilyService.create({
       userId,
       fatherName: body.fatherName.trim(),
       motherName: body.motherName.trim(),
+      siblingCount: body.siblingCount,
     });
 
     return successResponse(newFamilyInfo, 201);
   } catch (error) {
     console.error("Family info creation failed:", error);
-    return errorResponse("Failed to create family info", 500, error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Kayıt işlemi başarısız", 500, error instanceof Error ? error.message : "Unknown error");
   }
 }
 
@@ -88,21 +89,30 @@ export async function PATCH(
       return errorResponse("Invalid user id", 400);
     }
 
+    const existingFamilyInfo = await userFamilyService.findByUserId(userId);
+    if (!existingFamilyInfo) {
+      return errorResponse("Family info not found", 404);
+    }
+
     const body = await request.json();
-    const updateData: { fatherName?: string; motherName?: string } = {};
+    const updateData: { fatherName?: string; motherName?: string; siblingCount?: number } = {};
 
     if (body.fatherName !== undefined) {
       if (typeof body.fatherName !== "string" || body.fatherName.trim().length < 2) {
-        return errorResponse("fatherName must be at least 2 characters", 400);
+        return errorResponse("Baba adı en az 2 karakter olmalıdır!", 400);
       }
       updateData.fatherName = body.fatherName.trim();
     }
 
     if (body.motherName !== undefined) {
       if (typeof body.motherName !== "string" || body.motherName.trim().length < 2) {
-        return errorResponse("motherName must be at least 2 characters", 400);
+        return errorResponse("Anne adı en az 2 karakter olmalıdır!", 400);
       }
       updateData.motherName = body.motherName.trim();
+    }
+
+    if (body.siblingCount !== undefined) {
+      updateData.siblingCount = body.siblingCount;
     }
 
     if (Object.keys(updateData).length === 0) {

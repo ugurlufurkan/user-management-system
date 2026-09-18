@@ -3,6 +3,7 @@ import {
   uuid,
   varchar,
   timestamp,
+  integer,
 } from "drizzle-orm/pg-core";
 
 export const account = pgTable("account", {
@@ -45,6 +46,7 @@ export const userFamilyInformation = pgTable("user_family_information", {
     .references(() => user.id, { onDelete: "cascade" }),
   fatherName: varchar("father_name", { length: 100 }).notNull(),
   motherName: varchar("mother_name", { length: 100 }).notNull(),
+  siblingCount: integer("sibling_count").default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -52,14 +54,12 @@ export const userFamilyInformation = pgTable("user_family_information", {
 
 export const userGirlfriendInformation = pgTable("user_girlfriend_information", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  age: integer("age").default(0).notNull(), // YENİ: Yaş
+  city: varchar("city", { length: 100 }).default("").notNull(), // YENİ: Şehir
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_information", {
@@ -69,6 +69,7 @@ export const userGirlfriendFamilyInformation = pgTable("user_girlfriend_family_i
     .references(() => userGirlfriendInformation.id, { onDelete: "cascade" }),
   fatherName: varchar("father_name", { length: 100 }).notNull(),
   motherName: varchar("mother_name", { length: 100 }).notNull(),
+  siblingCount: integer("sibling_count").default(0).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

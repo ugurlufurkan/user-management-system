@@ -16,7 +16,7 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
     if (userId) {
       fetch(`/api/users/${userId}/family`)
         .then(res => res.ok ? res.json() : null)
-        .then(data => { if(data) setFamilyInfo(data); setLoading(false); });
+        .then(data => { if(data?.data) setFamilyInfo(data.data); setLoading(false); });
     }
   }, [userId]);
 
@@ -40,9 +40,10 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
     if (res.ok) { 
       setIsEditing(false); 
       setFamilyInfo({...familyInfo, ...payload} as FamilyInfo); 
-      showToast("Aile bilgileri kaydedildi!", "success"); 
+      showToast("Aile bilgileri başarıyla kaydedildi!", "success"); 
     } else {
-      showToast("Kayıt işlemi başarısız.", "error");
+      const errorData = await res.json();
+      showToast(errorData.error || "Kayıt işlemi başarısız.", "error");
     }
   };
 
@@ -55,7 +56,8 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
         setFamilyInfo(null);
         showToast("Aile bilgileri başarıyla silindi.", "success");
       } else {
-        showToast("Silme işlemi başarısız.", "error");
+        const errorData = await res.json();
+        showToast(errorData.error || "Silme işlemi başarısız.", "error");
       }
     } catch {
       showToast("Sunucu hatası.", "error");
@@ -100,7 +102,7 @@ export default function FamilyInfoCard({ userId, isReadOnly = false }: { userId:
 
       <div className="p-6">
         {isEditing && !isReadOnly ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <div>
               <label className="block text-[12px] font-medium text-zinc-700 mb-1">Baba Adı</label>
               <input name="fatherName" placeholder="Baba Adı" defaultValue={familyInfo?.fatherName} required 

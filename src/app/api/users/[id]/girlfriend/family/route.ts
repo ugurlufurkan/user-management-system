@@ -22,7 +22,7 @@ export async function GET(
 
     const girlfriendInfo = await userGirlfriendService.findByUserId(userId);
     if (!girlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
+      return errorResponse("Kız arkadaş bilgisi bulunamadı. Lütfen önce kız arkadaş bilgilerini ekleyin.", 404);
     }
 
     const familyInfo = await userGirlfriendFamilyService.findByGirlfriendId(girlfriendInfo.id);
@@ -50,7 +50,7 @@ export async function POST(
 
     const girlfriendInfo = await userGirlfriendService.findByUserId(userId);
     if (!girlfriendInfo) {
-      return errorResponse("Girlfriend info not found. Create girlfriend info first.", 404);
+      return errorResponse("Kız arkadaş bilgisi bulunamadı. Lütfen önce kız arkadaş bilgilerini ekleyin.", 404);
     }
 
     const existingFamilyInfo = await userGirlfriendFamilyService.findByGirlfriendId(girlfriendInfo.id);
@@ -72,6 +72,7 @@ export async function POST(
       girlfriendId: girlfriendInfo.id,
       fatherName: body.fatherName.trim(),
       motherName: body.motherName.trim(),
+      siblingCount: body.siblingCount,
     });
 
     return successResponse(newFamilyInfo, 201);
@@ -94,11 +95,11 @@ export async function PATCH(
 
     const girlfriendInfo = await userGirlfriendService.findByUserId(userId);
     if (!girlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
+      return errorResponse("Kız arkadaş bilgisi bulunamadı. Lütfen önce kız arkadaş bilgilerini ekleyin.", 404);
     }
 
     const body = await request.json();
-    const updateData: { fatherName?: string; motherName?: string } = {};
+    const updateData: { fatherName?: string; motherName?: string; siblingCount?: number } = {};
 
     if (body.fatherName !== undefined) {
       if (typeof body.fatherName !== "string" || body.fatherName.trim().length < 2) {
@@ -112,6 +113,10 @@ export async function PATCH(
         return errorResponse("motherName must be at least 2 characters", 400);
       }
       updateData.motherName = body.motherName.trim();
+    }
+
+    if (body.siblingCount !== undefined) {
+      updateData.siblingCount = body.siblingCount;
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -144,7 +149,7 @@ export async function DELETE(
 
     const girlfriendInfo = await userGirlfriendService.findByUserId(userId);
     if (!girlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
+      return errorResponse("Kız arkadaş bilgisi bulunamadı. Lütfen önce kız arkadaş bilgilerini ekleyin.", 404);
     }
 
     const deletedFamilyInfo = await userGirlfriendFamilyService.delete(girlfriendInfo.id);

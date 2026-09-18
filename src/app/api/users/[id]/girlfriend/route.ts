@@ -4,121 +4,84 @@ import { errorResponse, successResponse } from "@/lib/api-response";
 import { userService } from "@/services/user.service";
 
 function isValidUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value
-  );
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: userId } = await params;
-
-    if (!isValidUuid(userId)) {
-      return errorResponse("Invalid user id", 400);
-    }
+    if (!isValidUuid(userId)) return errorResponse("Geçersiz kullanıcı ID", 400);
 
     const girlfriendInfo = await userGirlfriendService.findByUserId(userId);
-
-    if (!girlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
-    }
+    if (!girlfriendInfo) return errorResponse("Kız arkadaş bilgisi bulunamadı", 404);
 
     return successResponse(girlfriendInfo);
   } catch (error) {
-    console.error("Girlfriend info lookup failed:", error);
-    return errorResponse("Failed to fetch girlfriend info", 500, error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Bilgiler alınamadı", 500, error instanceof Error ? error.message : "Unknown error");
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: userId } = await params;
-
-    if (!isValidUuid(userId)) {
-      return errorResponse("Invalid user id", 400);
-    }
+    if (!isValidUuid(userId)) return errorResponse("Geçersiz kullanıcı ID", 400);
 
     const user = await userService.findById(userId);
-    if (!user) {
-      return errorResponse("User not found", 404);
-    }
+    if (!user) return errorResponse("Kullanıcı bulunamadı", 404);
 
     const existingGirlfriendInfo = await userGirlfriendService.findByUserId(userId);
-    if (existingGirlfriendInfo) {
-      return errorResponse("Girlfriend info already exists for this user", 400);
-    }
+    if (existingGirlfriendInfo) return errorResponse("Kız arkadaş bilgisi zaten mevcut", 400);
 
     const body = await request.json();
 
     if (!body.firstName || typeof body.firstName !== "string" || body.firstName.trim().length < 2) {
-       return errorResponse("firstName must be at least 2 characters", 400);
+       return errorResponse("İsim en az 2 karakter olmalıdır!", 400);
     }
-    
     if (!body.lastName || typeof body.lastName !== "string" || body.lastName.trim().length < 2) {
-       return errorResponse("lastName must be at least 2 characters", 400);
+       return errorResponse("Soyisim en az 2 karakter olmalıdır!", 400);
     }
 
     const newGirlfriendInfo = await userGirlfriendService.create({
       userId,
       firstName: body.firstName.trim(),
       lastName: body.lastName.trim(),
+      age: body.age,
+      city: body.city,
     });
 
     return successResponse(newGirlfriendInfo, 201);
   } catch (error) {
-    console.error("Girlfriend info creation failed:", error);
-    return errorResponse("Failed to create girlfriend info", 500, error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Kayıt işlemi başarısız", 500, error instanceof Error ? error.message : "Unknown error");
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: userId } = await params;
+    if (!isValidUuid(userId)) return errorResponse("Geçersiz kullanıcı ID", 400);
 
-    if (!isValidUuid(userId)) {
-      return errorResponse("Invalid user id", 400);
-    }
+    const existingGirlfriendInfo = await userGirlfriendService.findByUserId(userId);
+    if (!existingGirlfriendInfo) return errorResponse("Kız arkadaş bilgisi bulunamadı", 404);
 
     const body = await request.json();
-    const updateData: { firstName?: string; lastName?: string } = {};
 
-    if (body.firstName !== undefined) {
-      if (typeof body.firstName !== "string" || body.firstName.trim().length < 2) {
-        return errorResponse("firstName must be at least 2 characters", 400);
-      }
-      updateData.firstName = body.firstName.trim();
+    if (body.firstName !== undefined && (typeof body.firstName !== "string" || body.firstName.trim().length < 2)) {
+      return errorResponse("İsim en az 2 karakter olmalıdır!", 400);
+    }
+    if (body.lastName !== undefined && (typeof body.lastName !== "string" || body.lastName.trim().length < 2)) {
+      return errorResponse("Soyisim en az 2 karakter olmalıdır!", 400);
     }
 
-    if (body.lastName !== undefined) {
-      if (typeof body.lastName !== "string" || body.lastName.trim().length < 2) {
-        return errorResponse("lastName must be at least 2 characters", 400);
-      }
-      updateData.lastName = body.lastName.trim();
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return errorResponse("At least one field is required", 400);
-    }
-
-    const updatedGirlfriendInfo = await userGirlfriendService.update(userId, updateData);
-
-    if (!updatedGirlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
-    }
+    const updatedGirlfriendInfo = await userGirlfriendService.update(userId, {
+      firstName: body.firstName?.trim(),
+      lastName: body.lastName?.trim(),
+      age: body.age,
+      city: body.city,
+    });
 
     return successResponse(updatedGirlfriendInfo);
   } catch (error) {
-    console.error("Girlfriend info update failed:", error);
-    return errorResponse("Failed to update girlfriend info", 500, error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Güncelleme başarısız", 500, error instanceof Error ? error.message : "Unknown error");
   }
 }
 
@@ -128,20 +91,11 @@ export async function DELETE(
 ) {
   try {
     const { id: userId } = await params;
+    if (!isValidUuid(userId)) return errorResponse("Geçersiz kullanıcı ID", 400);
 
-    if (!isValidUuid(userId)) {
-      return errorResponse("Invalid user id", 400);
-    }
-
-    const deletedGirlfriendInfo = await userGirlfriendService.delete(userId);
-
-    if (!deletedGirlfriendInfo) {
-      return errorResponse("Girlfriend info not found", 404);
-    }
-
+    await userGirlfriendService.delete(userId);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Girlfriend info deletion failed:", error);
-    return errorResponse("Failed to delete girlfriend info", 500, error instanceof Error ? error.message : "Unknown error");
+    return errorResponse("Silme işlemi başarısız", 500, error instanceof Error ? error.message : "Unknown error");
   }
 }

@@ -7,23 +7,24 @@ export class UserGirlfriendFamilyService {
     girlfriendId: string;
     fatherName: string;
     motherName: string;
+    siblingCount?: number;
   }) {
-    const [newFamilyInfo] = await db
+    const [newGfFamilyInfo] = await db
       .insert(userGirlfriendFamilyInformation)
       .values(data)
       .returning();
 
-    return newFamilyInfo;
+    return newGfFamilyInfo;
   }
 
   async findByGirlfriendId(girlfriendId: string) {
-    const [familyInfo] = await db
+    const [gfFamilyInfo] = await db
       .select()
       .from(userGirlfriendFamilyInformation)
       .where(sql`${userGirlfriendFamilyInformation.girlfriendId} = ${girlfriendId}::uuid`)
       .limit(1);
 
-    return familyInfo ?? null;
+    return gfFamilyInfo ?? null;
   }
 
   async update(
@@ -31,6 +32,7 @@ export class UserGirlfriendFamilyService {
     data: {
       fatherName?: string;
       motherName?: string;
+      siblingCount?: number;
     }
   ) {
     const [updatedFamilyInfo] = await db

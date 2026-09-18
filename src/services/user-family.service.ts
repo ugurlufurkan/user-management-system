@@ -7,6 +7,7 @@ export class UserFamilyService {
     userId: string;
     fatherName: string;
     motherName: string;
+    siblingCount?: number;
   }) {
     const [newFamilyInfo] = await db
       .insert(userFamilyInformation)
@@ -31,6 +32,7 @@ export class UserFamilyService {
     data: {
       fatherName?: string;
       motherName?: string;
+      siblingCount?: number;
     }
   ) {
     const [updatedFamilyInfo] = await db

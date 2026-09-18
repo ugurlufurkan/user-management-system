@@ -14,9 +14,9 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
 
   useEffect(() => {
     if (userId) {
-      fetch(`/api/users/${userId}/girlfriend-family`)
+      fetch(`/api/users/${userId}/girlfriend/family`)
         .then(res => res.ok ? res.json() : null)
-        .then(data => { if(data) setGfFamilyInfo(data); setLoading(false); });
+        .then(data => { if(data?.data) setGfFamilyInfo(data.data); setLoading(false); });
     }
   }, [userId]);
 
@@ -31,7 +31,7 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
     };
 
     const method = gfFamilyInfo ? "PATCH" : "POST";
-    const res = await fetch(`/api/users/${userId}/girlfriend-family`, { 
+    const res = await fetch(`/api/users/${userId}/girlfriend/family`, { 
       method, 
       headers: { "Content-Type": "application/json" }, 
       body: JSON.stringify(payload) 
@@ -40,9 +40,10 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
     if (res.ok) { 
       setIsEditing(false); 
       setGfFamilyInfo({...gfFamilyInfo, ...payload} as GFFamilyInfo); 
-      showToast("Kız arkadaş aile bilgileri kaydedildi!", "success"); 
+      showToast("Kız arkadaş aile bilgileri başarıyla kaydedildi!", "success"); 
     } else {
-      showToast("Kayıt işlemi başarısız.", "error");
+      const errorData = await res.json();
+      showToast(errorData.error || "Kayıt işlemi başarısız.", "error");
     }
   };
 
@@ -50,12 +51,13 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
     if (!confirm("Kız arkadaş aile bilgilerini tamamen silmek istediğinize emin misiniz?")) return;
     
     try {
-      const res = await fetch(`/api/users/${userId}/girlfriend-family`, { method: "DELETE" });
+      const res = await fetch(`/api/users/${userId}/girlfriend/family`, { method: "DELETE" });
       if (res.ok) {
         setGfFamilyInfo(null);
-        showToast("Aile bilgileri başarıyla silindi.", "success");
+        showToast("Kız arkadaş aile bilgileri başarıyla silindi.", "success");
       } else {
-        showToast("Silme işlemi başarısız.", "error");
+        const errorData = await res.json();
+        showToast(errorData.error || "Silme işlemi başarısız.", "error");
       }
     } catch {
       showToast("Sunucu hatası.", "error");
@@ -100,7 +102,7 @@ export default function GirlfriendFamilyInfoCard({ userId, isReadOnly = false }:
 
       <div className="p-6">
         {isEditing && !isReadOnly ? (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <div>
               <label className="block text-[12px] font-medium text-zinc-700 mb-1">Baba Adı</label>
               <input name="fatherName" placeholder="Baba Adı" defaultValue={gfFamilyInfo?.fatherName} required 
