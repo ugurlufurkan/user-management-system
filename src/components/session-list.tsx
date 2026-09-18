@@ -69,12 +69,12 @@ export default function SessionList() {
   };
 
   if (loading) return (
-    <div className="bg-white border border-zinc-200/80 rounded-xl p-8 shadow-sm">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-8 shadow-sm">
       <div className="animate-pulse flex space-x-4">
         <div className="flex-1 space-y-4 py-1">
-          <div className="h-4 bg-zinc-200 rounded w-1/4"></div>
+          <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4"></div>
           <div className="space-y-3">
-            <div className="h-20 bg-zinc-100 rounded-lg"></div>
+            <div className="h-20 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg"></div>
           </div>
         </div>
       </div>
@@ -82,51 +82,51 @@ export default function SessionList() {
   );
 
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden shadow-sm">
-      <div className="px-6 py-5 border-b border-zinc-100 flex items-center justify-between">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <ShieldCheck size={18} strokeWidth={1.8} className="text-indigo-600" />
-          <h2 className="text-sm font-semibold text-zinc-900">Aktif Oturumlar</h2>
+          <ShieldCheck size={18} strokeWidth={1.8} className="text-indigo-600 dark:text-indigo-400" />
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Aktif Oturumlar</h2>
         </div>
-        <span className="text-[11px] font-semibold bg-zinc-100 text-zinc-500 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span className="text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
           Güvenlik
         </span>
       </div>
       
       {sessions.length === 0 ? (
-        <div className="p-8 text-center text-sm text-zinc-500">Aktif oturum bulunamadı.</div>
+        <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Aktif oturum bulunamadı.</div>
       ) : (
-        <div className="divide-y divide-zinc-100">
+        <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
           {sessions.map((session) => (
             <div 
               key={session.id} 
               className={`p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-colors ${
-                session.isCurrentDevice ? 'bg-indigo-50/30' : 'hover:bg-zinc-50/50'
+                session.isCurrentDevice ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : 'hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <div className="flex items-start gap-3.5">
                 <div className={`mt-0.5 w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border ${
-                  session.isCurrentDevice ? 'bg-indigo-100/50 text-indigo-600 border-indigo-200/50' : 'bg-zinc-100 text-zinc-500 border-zinc-200/50'
+                  session.isCurrentDevice ? 'bg-indigo-100/50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-800/50' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-700/50'
                 }`}>
                   {getDeviceIcon(session.userAgent)}
                 </div>
                 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[13px] text-zinc-900 truncate max-w-[200px] sm:max-w-[300px]" title={session.userAgent}>
+                    <span className="font-semibold text-[13px] text-zinc-900 dark:text-white truncate max-w-[200px] sm:max-w-[300px]" title={session.userAgent}>
                       {session.userAgent.split(" ")[0]} 
-                      <span className="text-zinc-400 font-normal ml-1">Tarayıcı/Cihaz</span>
+                      <span className="text-zinc-400 dark:text-zinc-500 font-normal ml-1">Tarayıcı/Cihaz</span>
                     </span>
                     {session.isCurrentDevice && (
-                      <span className="bg-indigo-600 text-white text-[10px] uppercase tracking-widest px-2 py-0.5 rounded flex items-center gap-1 font-bold">
+                      <span className="bg-indigo-600 dark:bg-indigo-500 text-white text-[10px] uppercase tracking-widest px-2 py-0.5 rounded flex items-center gap-1 font-bold">
                         <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> Mevcut
                       </span>
                     )}
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-3 text-[12px] text-zinc-500">
+                  <div className="flex flex-wrap items-center gap-3 text-[12px] text-zinc-500 dark:text-zinc-400">
                     <span className="flex items-center gap-1.5"><Globe size={12} /> {session.ipAddress}</span>
-                    <span className="hidden sm:inline-block w-1 h-1 bg-zinc-300 rounded-full" />
+                    <span className="hidden sm:inline-block w-1 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
                     <span>Son: {new Date(session.expiresAt).toLocaleDateString('tr-TR')}</span>
                   </div>
                 </div>
@@ -136,8 +136,8 @@ export default function SessionList() {
                 onClick={() => handleRevoke(session.id, session.isCurrentDevice)}
                 className={`shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold transition-all focus:outline-none focus:ring-2 ${
                   session.isCurrentDevice 
-                    ? 'bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-500/30' 
-                    : 'bg-white border border-zinc-200 text-zinc-600 hover:text-red-600 hover:bg-red-50 hover:border-red-100 shadow-sm focus:ring-zinc-500/30'
+                    ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 focus:ring-red-500/30' 
+                    : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-100 dark:hover:border-red-800/50 shadow-sm focus:ring-zinc-500/30'
                 }`}
               >
                 <LogOut size={14} strokeWidth={2} /> Sonlandır

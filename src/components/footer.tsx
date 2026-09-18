@@ -15,21 +15,21 @@ const supportLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-900 text-zinc-400 mt-auto border-t border-zinc-800">
+    <footer className="bg-white dark:bg-zinc-950 text-zinc-500 dark:text-zinc-400 mt-auto border-t border-zinc-200 dark:border-zinc-800 transition-colors">
       <div className="max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-[38px] h-[38px] bg-white rounded-md p-1 flex items-center justify-center">
+              <div style={{ backgroundColor: "#ffffff" }} className="w-[38px] h-[38px] rounded-md p-1 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
                 <Image src="/logo.png" alt="Aksiyonsoft Logo" width={32} height={32} className="object-contain" />
               </div>
               <div className="flex flex-col justify-center">
-                <span className="text-sm font-bold text-zinc-200 tracking-tight leading-tight">
+                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-200 tracking-tight leading-tight">
                   User Management System
                 </span>
-                <span className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase mt-[1px]">
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold tracking-widest uppercase mt-[1px]">
                   Aksiyonsoft
                 </span>
               </div>
@@ -41,12 +41,12 @@ export default function Footer() {
           
           {/* Platform */}
           <div>
-            <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-widest mb-5">Platform</h4>
+            <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-300 uppercase tracking-widest mb-5">Platform</h4>
             <ul className="space-y-3">
               {platformLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="flex items-center gap-2.5 text-sm text-zinc-500 hover:text-zinc-200 transition-colors duration-200">
-                    <span className="text-zinc-600">{link.icon}</span>
+                  <Link href={link.href} className="flex items-center gap-2.5 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors duration-200">
+                    <span className="text-zinc-400 dark:text-zinc-600">{link.icon}</span>
                     {link.label}
                   </Link>
                 </li>
@@ -56,12 +56,12 @@ export default function Footer() {
 
           {/* Destek */}
           <div>
-            <h4 className="text-[11px] font-semibold text-zinc-300 uppercase tracking-widest mb-5">Destek</h4>
+            <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-300 uppercase tracking-widest mb-5">Destek</h4>
             <ul className="space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="flex items-center gap-2.5 text-sm text-zinc-500 hover:text-zinc-200 transition-colors duration-200">
-                    <span className="text-zinc-600">{link.icon}</span>
+                  <Link href={link.href} className="flex items-center gap-2.5 text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors duration-200">
+                    <span className="text-zinc-400 dark:text-zinc-600">{link.icon}</span>
                     {link.label}
                   </Link>
                 </li>
@@ -72,14 +72,14 @@ export default function Footer() {
       </div>
       
       {/* Alt Çizgi */}
-      <div className="border-t border-zinc-800">
-        <div className="max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-zinc-600">
+      <div className="border-t border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-zinc-500 dark:text-zinc-600">
           <p>&copy; {new Date().getFullYear()} Aksiyonsoft Yazılım. Tüm hakları saklıdır.</p>
           <div className="flex items-center gap-5">
-            <span className="flex items-center gap-1.5 hover:text-zinc-400 cursor-pointer transition-colors">
+            <span className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-400 cursor-pointer transition-colors">
               <Shield size={12} strokeWidth={1.8} /> Gizlilik
             </span>
-            <span className="flex items-center gap-1.5 hover:text-zinc-400 cursor-pointer transition-colors">
+            <span className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-400 cursor-pointer transition-colors">
               <FileText size={12} strokeWidth={1.8} /> Kullanım Şartları
             </span>
           </div>
