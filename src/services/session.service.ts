@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { session } from "@/db/schema";
+import { session, account, user } from "@/db/schema";
 
 export class SessionService {
   async create(data: {
@@ -18,7 +18,6 @@ export class SessionService {
     return newSession;
   }
 
-  // Sadece süresi dolmamış aktif oturumu getirir (Giriş kontrolü için)
   async findByToken(token: string) {
     const [activeSession] = await db
       .select()
@@ -29,7 +28,6 @@ export class SessionService {
     return activeSession ?? null;
   }
 
-  // Profil sayfasında adamın açık olan tüm cihazlarını listelemek için
   async findActiveByAccountId(accountId: string) {
     return db
       .select()
@@ -38,7 +36,6 @@ export class SessionService {
       .orderBy(sql`${session.createdAt} DESC`);
   }
 
-  // Belli bir cihazı (oturumu) id ile kapatmak (çıkış yaptırmak) için
   async delete(id: string) {
     const [deletedSession] = await db
       .delete(session)
@@ -48,7 +45,6 @@ export class SessionService {
     return deletedSession ?? null;
   }
   
-  // Bulunulan mevcut oturumdan (token ile) çıkış yapmak için
   async revokeByToken(token: string) {
     const [revokedSession] = await db
       .delete(session)
@@ -56,6 +52,25 @@ export class SessionService {
       .returning();
       
     return revokedSession ?? null;
+  }
+
+  // --- YENİ EKLENEN SİSTEM: Yetki ve Kimlik Kontrolü ---
+  // Sadece oturumu değil, kişinin yetkisini (role) ve adını soyadını da aynı anda getirir.
+  async getAuthUserByToken(token: string) {
+    const [result] = await db
+      .select({
+        accountId: session.accountId,
+        role: account.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      })
+      .from(session)
+      .innerJoin(account, sql`${session.accountId} = ${account.id}`)
+      .innerJoin(user, sql`${account.id} = ${user.accountId}`)
+      .where(sql`${session.token} = ${token} AND ${session.expiresAt} > NOW()`)
+      .limit(1);
+
+    return result ?? null;
   }
 }
 

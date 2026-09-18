@@ -9,6 +9,7 @@ export const account = pgTable("account", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: varchar("role", { length: 20 }).default("USER").notNull(), // <-- ADMIN/USER YETKİSİ
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -28,8 +29,6 @@ export const user = pgTable("user", {
     .notNull()
     .references(() => account.id, { onDelete: "cascade" }),
   
-  // Kullanıcının bağlı olduğu departman (section)
-  // "onDelete: set null" => Eğer departman silinirse adam silinmesin, sadece departmanı "Boş" görünsün.
   sectionId: uuid("section_id").references(() => section.id, { onDelete: "set null" }),
   
   firstName: varchar("first_name", { length: 100 }).notNull(),
