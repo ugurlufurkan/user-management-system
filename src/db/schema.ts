@@ -87,3 +87,13 @@ export const session = pgTable("session", {
     .defaultNow()
     .notNull(),
 });
+// --- SİSTEM HAREKETLERİ (AUDIT LOGS) TABLOSU ---
+export const activityLog = pgTable("activity_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  accountId: uuid("account_id").references(() => account.id, { onDelete: "set null" }), // Kullanıcı silinse bile log kalsın
+  action: varchar("action", { length: 255 }).notNull(),
+  details: varchar("details", { length: 1000 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
